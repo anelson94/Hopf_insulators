@@ -12,13 +12,22 @@ import numpy as np
 from math import sin, cos, pi
 #import math
 
-kx = np.arange(0, 2*pi, 2*pi/10)
-ky = pi/4 #np.arange(0, 2*pi, 2*pi/10)
-kz = pi/3 #np.arange(0, 2*pi, 2*pi/10)
+kx = np.linspace(0, 2*pi, 11)
+ky = 0 #np.arange(0, 2*pi, 2*pi/10)
+kz = 0 #np.arange(0, 2*pi, 2*pi/10)
 
-sigmax = np.matrix([[0, 1], [1, 0]])
-sigmay = np.matrix([[0, -1j], [1j, 0]])
-sigmaz = np.matrix([[1, 0], [0, -1]])
+sigmax = np.array([[0, 1], [1, 0]])
+sigmay = np.array([[0, -1j], [1j, 0]])
+sigmaz = np.array([[1, 0], [0, -1]])
+
+sigmax = sigmax[np.newaxis, :, :]
+sigmaxstack = np.tile(sigmax, (11,1,1))
+
+sigmay = sigmay[np.newaxis, :, :]
+sigmaystack = np.tile(sigmay, (11,1,1))
+
+sigmaz = sigmaz[np.newaxis, :, :]
+sigmazstack = np.tile(sigmaz, (11,1,1))
 
 h = 1
 t = 1
@@ -36,11 +45,16 @@ Hy = np.multiply(2 * lamb, t*sin(ky)*sin(kz) -
 Hz = np.multiply(lamb, np.power(np.sin(kx), 2) + t**2 * sin(ky)**2 - sin(kz)**2 - 
                  np.power(np.cos(kx) + cos(ky) + cos(kz) + h, 2))
 
-print(Hx[2])
-#HopfH = Hx*sigmax + Hy*sigmay + Hz*sigmaz
-#
-#[E,u] = np.linalg.eigh(HopfH)
-#
-#print(E)
-#print(u[:,0])
-#print(u[:,1])
+Hx = Hx[:, np.newaxis, np.newaxis]
+Hy = Hy[:, np.newaxis, np.newaxis]
+Hz = Hz[:, np.newaxis, np.newaxis]
+
+
+HopfH = (np.multiply(Hx, sigmaxstack) + np.multiply(Hy, sigmaystack) + 
+         np.multiply(Hz, sigmazstack))
+
+[E,u] = np.linalg.eigh(HopfH[0,:,:])
+
+print(E)
+print(u[:,0])
+print(u[:,1])
