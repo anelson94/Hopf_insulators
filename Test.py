@@ -19,13 +19,19 @@ import numpy as np
 #
 #[xx, yy, zz] = np.meshgrid(x, y, z)
 #print('xx=',xx, 'yy=', yy, 'zz=', zz, sep='\n')
+
 sigmax = np.array([[0, 1], [1, 0]])
 print(sigmax.shape)
-sigmax = sigmax[:,:, np.newaxis]
+sigmax = sigmax[np.newaxis,:,:]
 print(sigmax.shape)
-sigmastack = np.tile(sigmax, (1,1,3))
+sigmastack = np.tile(sigmax, (3,1,1))
 print('sigma=', sigmastack)
 print(sigmastack.shape)
+
+E, u = np.linalg.eigh(sigmastack)
+
+print(E)
+print('Edim=', E.shape, ' udim=', u.shape)
 
 
 x = np.array([1,3])

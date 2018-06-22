@@ -13,8 +13,8 @@ from math import sin, cos, pi
 #import math
 
 kx = np.linspace(0, 2*pi, 11)
-ky = 0 #np.arange(0, 2*pi, 2*pi/10)
-kz = 0 #np.arange(0, 2*pi, 2*pi/10)
+ky = pi/3 #np.arange(0, 2*pi, 2*pi/10)
+kz = pi/2 #np.arange(0, 2*pi, 2*pi/10)
 
 sigmax = np.array([[0, 1], [1, 0]])
 sigmay = np.array([[0, -1j], [1j, 0]])
@@ -53,8 +53,13 @@ Hz = Hz[:, np.newaxis, np.newaxis]
 HopfH = (np.multiply(Hx, sigmaxstack) + np.multiply(Hy, sigmaystack) + 
          np.multiply(Hz, sigmazstack))
 
-[E,u] = np.linalg.eigh(HopfH[0,:,:])
+[E,u] = np.linalg.eigh(HopfH)
 
-print(E)
-print(u[:,0])
-print(u[:,1])
+print(E[:,0])
+print(E[:,1])
+print(u[:,:,0])
+print(u[:,:,1])
+
+print('H(pi,pi/3,pi/2)=',HopfH[6,:,:])
+Hopfreturn = u[6,:,:] @ np.diag(E[6,:]) @ np.conjugate(np.transpose(u[6,:,:]))
+print('Hfromdiagonalization=', Hopfreturn)
