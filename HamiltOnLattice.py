@@ -7,59 +7,75 @@ Created on Thu Jun 21 15:59:07 2018
 
 # The Hamiltonian of Hopf insulator is defined on a lattice (kx, ky, kz),
 # kx in (0, 2pi), ky in (0, 2pi), kz in (0, 2pi).
+# For all (kx, ky, kz) calculate eigenvalues and eigenvectors 
+# of Hopf Hamiltonian.
 
 import numpy as np
 from math import sin, cos, pi
 #import math
 
-kx = np.linspace(0, 2*pi, 11)
-ky = pi/3 #np.arange(0, 2*pi, 2*pi/10)
-kz = pi/2 #np.arange(0, 2*pi, 2*pi/10)
-
-sigmax = np.array([[0, 1], [1, 0]])
-sigmay = np.array([[0, -1j], [1j, 0]])
-sigmaz = np.array([[1, 0], [0, -1]])
-
-sigmax = sigmax[np.newaxis, :, :]
-sigmaxstack = np.tile(sigmax, (11,1,1))
-
-sigmay = sigmay[np.newaxis, :, :]
-sigmaystack = np.tile(sigmay, (11,1,1))
-
-sigmaz = sigmaz[np.newaxis, :, :]
-sigmazstack = np.tile(sigmaz, (11,1,1))
+Nx = 11
+Ny = 11
+Nz = 11
 
 h = 1
 t = 1
 
+kx = np.linspace(0, 2*pi, Nx)
+ky = np.linspace(0, 2*pi, Ny)
+kz = np.linspace(0, 2*pi, Nz)
+
+# Cartesian coordinates
+[kkx, kky, kkz] = np.meshgrid(kx, ky, kz)
+
+# Pauli matrices
+sigmax = np.array([[0, 1], [1, 0]])
+sigmay = np.array([[0, -1j], [1j, 0]])
+sigmaz = np.array([[1, 0], [0, -1]])
+
+#Stack Nx*Ny*Nz Pauli matrices for calculations at all (kx, ky, kz)
+sigmax = sigmax[np.newaxis, np.newaxis, np.newaxis, :, :]
+sigmaxstack = np.tile(sigmax, (Nx, Ny, Nz, 1, 1))
+
+sigmay = sigmay[np.newaxis, np.newaxis, np.newaxis, :, :]
+sigmaystack = np.tile(sigmay, (Nx, Ny, Nz, 1, 1))
+
+sigmaz = sigmaz[np.newaxis, np.newaxis, np.newaxis, :, :]
+sigmazstack = np.tile(sigmaz, (Nx, Ny, Nz, 1, 1))
+
 # Hopf Hamiltonian is a mapping function from T^3 to S^2.
 # It has two energy states, one of them occupied.
 
-lamb = np.divide(1, np.power(np.sin(kx), 2) + sin(ky)**2 + sin(kz)**2 +
-                 np.power(np.cos(kx) + cos(ky) + cos(kz) + h, 2))
+lamb = np.divide(1, np.power(np.sin(kkx), 2) + np.power(np.sin(kky), 2) + 
+                 np.power(np.sin(kkz), 2) + 
+                 np.power(np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
 
-Hx = np.multiply(2 * lamb, np.sin(kx)*sin(ky) + 
-                 t*sin(ky)*(np.cos(kx) + cos(ky) + cos(kz) + h))
-Hy = np.multiply(2 * lamb, t*sin(ky)*sin(kz) -
-                 np.multiply(np.sin(kx), np.cos(kx) + cos(ky) + cos(kz) + h))
-Hz = np.multiply(lamb, np.power(np.sin(kx), 2) + t**2 * sin(ky)**2 - sin(kz)**2 - 
-                 np.power(np.cos(kx) + cos(ky) + cos(kz) + h, 2))
+Hx = np.multiply(2 * lamb, np.multiply(np.sin(kkx), np.sin(kky)) + 
+                 t*np.multiply(np.sin(kky), (np.cos(kkx) + np.cos(kky) + 
+                                             np.cos(kkz) + h)))
+Hy = np.multiply(2 * lamb, t*np.multiply(np.sin(kky), np.sin(kkz)) -
+                 np.multiply(np.sin(kkx), (np.cos(kkx) + np.cos(kky) + 
+                                           np.cos(kkz) + h)))
+Hz = np.multiply(lamb, (np.power(np.sin(kkx), 2) + 
+                        t**2 * np.power(np.sin(kky), 2) - 
+                        np.power(np.sin(kkz), 2) - 
+                        np.power((np.cos(kkx) + np.cos(kky) + 
+                                  np.cos(kkz) + h), 2)))
 
-Hx = Hx[:, np.newaxis, np.newaxis]
-Hy = Hy[:, np.newaxis, np.newaxis]
-Hz = Hz[:, np.newaxis, np.newaxis]
+Hx = Hx[:, :, :, np.newaxis, np.newaxis]
+Hy = Hy[:, :, :, np.newaxis, np.newaxis]
+Hz = Hz[:, :, :, np.newaxis, np.newaxis]
 
 
 HopfH = (np.multiply(Hx, sigmaxstack) + np.multiply(Hy, sigmaystack) + 
          np.multiply(Hz, sigmazstack))
 
+# Calculate eigenvalues and eigenvectors of H-Hopf
 [E,u] = np.linalg.eigh(HopfH)
 
-print(E[:,0])
-print(E[:,1])
-print(u[:,:,0])
-print(u[:,:,1])
-
-print('H(pi,pi/3,pi/2)=',HopfH[6,:,:])
-Hopfreturn = u[6,:,:] @ np.diag(E[6,:]) @ np.conjugate(np.transpose(u[6,:,:]))
+# Check that H = UEU^-1 = UEU^+
+print('H(pi,pi/5,3pi/5)=',HopfH[5, 1, 3, :, :])
+Hopfreturn = u[5, 1, 3, :, :] @ np.diag(E[5, 1, 3, :]) @ np.conjugate(np.transpose(u[5, 1, 3, :, :]))
 print('Hfromdiagonalization=', Hopfreturn)
+Hopfretinv = u[5, 1, 3, :, :] @ np.diag(E[5, 1, 3, :]) @ np.linalg.inv(u[5, 1, 3, :, :])
+print('HfromdiagUinv=', Hopfretinv)
