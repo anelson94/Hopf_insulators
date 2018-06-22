@@ -11,15 +11,19 @@ Created on Thu Jun 21 15:59:07 2018
 # of Hopf Hamiltonian.
 
 import numpy as np
-from math import sin, cos, pi
+from math import pi
+import pickle
 #import math
 
-Nx = 11
-Ny = 11
-Nz = 11
+# Import parameters for Hopf Hamiltonian from file params.py
+import params
 
-h = 1
-t = 1
+t = params.t
+h = params.h
+
+Nx = params.Nx
+Ny = params.Ny
+Nz = params.Nz 
 
 kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)
@@ -71,7 +75,11 @@ HopfH = (np.multiply(Hx, sigmaxstack) + np.multiply(Hy, sigmaystack) +
          np.multiply(Hz, sigmazstack))
 
 # Calculate eigenvalues and eigenvectors of H-Hopf
-[E,u] = np.linalg.eigh(HopfH)
+[E, u] = np.linalg.eigh(HopfH)
+
+with open('Hopfeigen.pickle', 'wb') as f:
+    pickle.dump([E, u], f)
+    
 
 # Check that H = UEU^-1 = UEU^+
 print('H(pi,pi/5,3pi/5)=',HopfH[5, 1, 3, :, :])
