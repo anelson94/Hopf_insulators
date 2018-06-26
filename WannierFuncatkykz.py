@@ -26,10 +26,12 @@ Ny = params.Ny
 Nz = params.Nz
 
 # Import eigenstates of Hopf Humiltonian
-with open('Hopfeigeneachk.pickle', 'rb') as f:
+with open('Hopfeigen.pickle', 'rb') as f:
     [Ek, uk] = pickle.load(f)
-    
-xAverage = np.empty([Ny, Nz])
+
+# Make parallel transport along kx, then calculate Hybrid Wannier Centers for 
+# each ky, kz separately    
+xAveragek = np.empty([Ny, Nz])
 for nky in range(0, Ny):
     for nkz in range(0, Nz):
         uOcc = uk[:, nky, nkz, :, 1]
@@ -41,17 +43,31 @@ for nky in range(0, Ny):
             usmooth[nkx + 1, :] = uOcc[nkx + 1, :] * cmath.exp(-1j * np.angle(Mold))
             Mprod = Mprod * abs(Mold)
         Lamb = np.dot(np.conj(usmooth[0, :]), usmooth[-1, :])
-        xAverage[nky, nkz] = -1/Nx*np.angle(Mprod/Lamb)
+        xAveragek[nky, nkz] = -1/Nx*np.angle(Mprod/Lamb)
+
+with open('HybridWannierCenters.pickle', 'rb') as f:
+    xAverage= pickle.load(f)
+    
+print(xAverage[1,:]-xAveragek[1,:])
+        
+print(xAveragek[0,:]-xAveragek[-1,:])
+print(xAveragek[:,0]-xAveragek[:,-1])
         
 ky = np.linspace(0, 2*pi, Ny)
 kz = np.linspace(0, 2*pi, Nz)
 
 # Cartesian coordinates
-[kky, kkz] = np.meshgrid(ky, kz)
+[kky, kkz] = np.meshgrid(ky, kz, indexing = 'ij')
 
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-ax.plot_surface(kky, kkz, xAverage,rstride=1, cstride=1,
-                cmap='viridis', edgecolor='none')
+figy = plt.figure()
+plt.plot(ky,xAveragek[:,9])
+plt.show
+
+figz = plt.figure()
+plt.plot(kz,xAveragek[9,:])
+plt.show
+#ax = plt.axes(projection='3d')
+#ax.plot_surface(kky, kkz, xAveragek,rstride=1, cstride=1,
+#                cmap='viridis', edgecolor='none')
 #ax.view_init(0,90) 
    
