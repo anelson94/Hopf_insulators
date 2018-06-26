@@ -30,12 +30,27 @@ kz = np.linspace(0, 2*pi, Nz)
 with open('HybridWannierCenters.pickle', 'rb') as f:
     xAverage= pickle.load(f)
     
+xdiffky = xAverage[0,:] - xAverage[-1,:]
+xdiffkz = xAverage[:,0] - xAverage[:,-1]
+file = open('xdiffky.txt','w')
+file.close()
+np.savetxt('xdiffky.txt', xdiffky, delimiter='\n', header='Difference between HW Centers at ky=0 and ky=2pi')
+file = open('xdiffkz.txt','w')
+file.close()
+np.savetxt('xdiffkz.txt', xdiffkz, delimiter='\n', header='Difference between HW Centers at kz=0 and kz=2pi')
+
+figdiffy = plt.figure()
+plt.plot(kz, xdiffky) 
+plt.show
+figdiffz = plt.figure()
+plt.plot(ky, xdiffkz) 
+plt.show   
 figy = plt.figure()
-plt.plot(ky,xAverage[:,9])
+plt.plot(ky,xAverage[:,100])
 plt.show
 
 figz = plt.figure()
-plt.plot(kz,xAverage[9,:])
+plt.plot(kz,xAverage[100,:])
 plt.show
     
 #fig = plt.figure()
