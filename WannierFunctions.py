@@ -28,29 +28,27 @@ with open('Hopfeigen.pickle', 'rb') as f:
     [E, u] = pickle.load(f)
 
 # Occupied states correspond to smaller eigenvalues
-uOcc = u[:, :, :, :, 1]
-
+uOcc = u[:, :, :, :, 0]
 usmooth = np.empty([Nx, Ny, Nz, 2], dtype = complex)
 usmooth[0, :, :, :] = uOcc[0, :, :, :]
 Mprod = 1
 
 for nkx in range(0, Nx - 1):
-    Mold = np.sum(np.conj(usmooth[nkx, :, :, :]) + 
+    Mold = np.sum(np.conj(usmooth[nkx, :, :, :]) * 
                   uOcc[nkx + 1, :, :, :], axis = -1)
     usmooth[nkx + 1, :, :, :] = (
             uOcc[nkx + 1, :, :, :] * 
             np.power(math.e, -1j * np.angle(Mold[:, :, np.newaxis]))
             )
-    print(np.sum(np.conj(usmooth[nkx, :, :, :]) + 
-                  usmooth[nkx + 1, :, :, :], axis = -1))
     Mprod = np.multiply(Mprod, abs(Mold))
     
-Lamb = np.sum(np.conj(usmooth[0, :, :, :]) + usmooth[Nx - 1, :, :, :], axis = -1)
+Lamb = np.sum(np.conj(usmooth[0, :, :, :]) * 
+              usmooth[Nx - 1, :, :, :], axis = -1)
 
 xAverage = -1/Nx*np.log(np.divide(Mprod,Lamb)).imag
 
-print(xAverage[2, :])
-print(xAverage[:, 2])
+#print(xAverage[2, :])
+#print(xAverage[:, 2])
 
 with open('HybridWannierCenters.pickle', 'wb') as f:
     pickle.dump(xAverage, f)
