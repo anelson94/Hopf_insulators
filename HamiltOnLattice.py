@@ -29,8 +29,8 @@ kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)
 kz = np.linspace(0, 2*pi, Nz)
 
-# Cartesian coordinates
-[kkx, kky, kkz] = np.meshgrid(kx, ky, kz)
+# Cartesian coordinates, indexing for correct order x,y,z (not y,x,z)
+[kkx, kky, kkz] = np.meshgrid(kx, ky, kz, indexing = 'ij')
 
 # Pauli matrices
 sigmax = np.array([[0, 1], [1, 0]])
@@ -82,8 +82,8 @@ with open('Hopfeigen.pickle', 'wb') as f:
     
 
 # Check that H = UEU^-1 = UEU^+
-print('H(pi,pi/5,3pi/5)=',HopfH[5, 1, 3, :, :])
-Hopfreturn = u[5, 1, 3, :, :] @ np.diag(E[5, 1, 3, :]) @ np.conjugate(np.transpose(u[5, 1, 3, :, :]))
-print('Hfromdiagonalization=', Hopfreturn)
-Hopfretinv = u[5, 1, 3, :, :] @ np.diag(E[5, 1, 3, :]) @ np.linalg.inv(u[5, 1, 3, :, :])
-print('HfromdiagUinv=', Hopfretinv)
+#print('H(pi,pi/5,3pi/5)=',HopfH[5, 1, 3, :, :])
+#Hopfreturn = u[5, 1, 3, :, :] @ np.diag(E[5, 1, 3, :]) @ np.conjugate(np.transpose(u[5, 1, 3, :, :]))
+#print('Hfromdiagonalization=', Hopfreturn)
+#Hopfretinv = u[5, 1, 3, :, :] @ np.diag(E[5, 1, 3, :]) @ np.linalg.inv(u[5, 1, 3, :, :])
+#print('HfromdiagUinv=', Hopfretinv)
