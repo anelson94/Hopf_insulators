@@ -12,6 +12,7 @@ import numpy as np
 import pickle
 from math import pi
 
+# Load parameters of the system
 import params
 
 t = params.t
@@ -27,24 +28,30 @@ kz = np.linspace(0, 2*pi, Nz)
 # Cartesian coordinates
 [kky, kkz] = np.meshgrid(ky, kz, indexing = 'ij')
 
+# Load calculated HW Centers
 with open('HybridWannierCenters.pickle', 'rb') as f:
     xAverage= pickle.load(f)
-    
+
+# Calculate the difference in HW Centers between two points: ky/z=0 and 2pi
+# It should be zero
 xdiffky = xAverage[0,:] - xAverage[-1,:]
 xdiffkz = xAverage[:,0] - xAverage[:,-1]
+# Write this difference in file
 file = open('xdiffky.txt','w')
 file.close()
 np.savetxt('xdiffky.txt', xdiffky, delimiter='\n', header='Difference between HW Centers at ky=0 and ky=2pi')
 file = open('xdiffkz.txt','w')
 file.close()
 np.savetxt('xdiffkz.txt', xdiffkz, delimiter='\n', header='Difference between HW Centers at kz=0 and kz=2pi')
-
+# Plot this difference as a function of kz/y
 figdiffy = plt.figure()
 plt.plot(kz, xdiffky) 
 plt.show
 figdiffz = plt.figure()
 plt.plot(ky, xdiffkz) 
-plt.show   
+plt.show 
+
+#Plot the cut of HW Centers at exact value of kz/y as a function of ky/z  
 figy = plt.figure()
 plt.plot(ky,xAverage[:,100])
 plt.show

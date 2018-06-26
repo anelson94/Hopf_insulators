@@ -30,9 +30,11 @@ with open('Hopfeigen.pickle', 'rb') as f:
 # Occupied states correspond to smaller eigenvalues
 uOcc = u[:, :, :, :, 0]
 usmooth = np.empty([Nx, Ny, Nz, 2], dtype = complex)
+# Initial smooth function is equal to calculated one
 usmooth[0, :, :, :] = uOcc[0, :, :, :]
 Mprod = 1
 
+# Use parallel transport to calculate smooth functions of kx
 for nkx in range(0, Nx - 1):
     Mold = np.sum(np.conj(usmooth[nkx, :, :, :]) * 
                   uOcc[nkx + 1, :, :, :], axis = -1)
@@ -45,10 +47,12 @@ for nkx in range(0, Nx - 1):
 Lamb = np.sum(np.conj(usmooth[0, :, :, :]) * 
               usmooth[Nx - 1, :, :, :], axis = -1)
 
+#Using calculated smooth functions we can obtain Hybrid Wannier Centers
 xAverage = -1/Nx*np.log(np.divide(Mprod,Lamb)).imag
 
 #print(xAverage[2, :])
 #print(xAverage[:, 2])
 
+# Save Centers to the file
 with open('HybridWannierCenters.pickle', 'wb') as f:
     pickle.dump(xAverage, f)
