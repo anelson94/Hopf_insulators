@@ -7,9 +7,9 @@ Created on Fri Jun 22 13:51:19 2018
 
 # Parameters for Hopf insulator
 
-Nx = 21
-Ny = 21
-Nz = 21
+Nx = 101
+Ny = 101
+Nz = 101
 
 h = 1
 t = 1
