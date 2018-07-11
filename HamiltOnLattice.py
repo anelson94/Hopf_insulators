@@ -54,7 +54,7 @@ lamb = np.divide(1, np.power(np.sin(kkx), 2) + np.power(np.sin(kky), 2) +
                  np.power(np.sin(kkz), 2) + 
                  np.power(np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
 
-Hx = np.multiply(2 * lamb, np.multiply(np.sin(kkx), np.sin(kky)) + 
+Hx = np.multiply(2 * lamb, np.multiply(np.sin(kkx), np.sin(kkz)) + 
                  t*np.multiply(np.sin(kky), (np.cos(kkx) + np.cos(kky) + 
                                              np.cos(kkz) + h)))
 Hy = np.multiply(2 * lamb, t*np.multiply(np.sin(kky), np.sin(kkz)) -

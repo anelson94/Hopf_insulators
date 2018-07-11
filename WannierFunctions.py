@@ -48,7 +48,8 @@ Lamb = np.sum(np.conj(usmooth[0, :, :, :]) *
               usmooth[Nx - 1, :, :, :], axis = -1)
 
 #Using calculated smooth functions we can obtain Hybrid Wannier Centers
-xAverage = -1/Nx*np.log(np.divide(Mprod,Lamb)).imag
+#xAverage = -1/Nx*np.log(np.divide(Mprod,Lamb)).imag
+xAverage = 1/Nx*np.log(Lamb).imag
 
 #print(xAverage[2, :])
 #print(xAverage[:, 2])
