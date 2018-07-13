@@ -26,37 +26,37 @@ ky = np.linspace(0, 2*pi, Ny)
 kz = np.linspace(0, 2*pi, Nz)
 
 # Import eigenstates of Hopf Humiltonian
-with open('Hopfeigen.pickle', 'rb') as f:
-    [E, u] = pickle.load(f)
+with open('Hopfsmoothstates.pickle', 'rb') as f:
+    usmooth = pickle.load(f)
 
 # Occupied states correspond to smaller eigenvalues
-uOcc = u[:, :, :, :, 0]
+#usmooth = u[:, :, :, :, 0]
 
-# Check gauge invariance: multiply uOcc(13,13,13) by additional phase
-#uOcc[65, 38, :, :] = uOcc[65, 38, :, :] * cmath.exp(0.2j)
-#uOcc[65, :, 21, :] = uOcc[65, :, 21, :] * cmath.exp(0.7j)
+# Check gauge invariance: multiply usmooth(13,13,13) by additional phase
+#usmooth[65, 38, :, :] = usmooth[65, 38, :, :] * cmath.exp(0.2j)
+#usmooth[65, :, 21, :] = usmooth[65, :, 21, :] * cmath.exp(0.7j)
 
 # Constract the overlaps between neighbor points in all possible directions
-Uxy1 = np.sum(np.multiply(np.conj(uOcc[0:Nx-1, 0:Ny-1, 0:Nz-1, :]), 
-                          uOcc[1:Nx, 0:Ny-1, 0:Nz-1, :]), axis = -1)
-Uxy2 = np.sum(np.multiply(np.conj(uOcc[1:Nx, 0:Ny-1, 0:Nz-1, :]), 
-                          uOcc[1:Nx, 1:Ny, 0:Nz-1, :]), axis = -1)
-Uxy3 = np.sum(np.multiply(np.conj(uOcc[1:Nx, 1:Ny, 0:Nz-1, :]), 
-                          uOcc[0:Nx-1, 1:Ny, 0:Nz-1, :]), axis = -1)
+Uxy1 = np.sum(np.multiply(np.conj(usmooth[0:Nx-1, 0:Ny-1, 0:Nz-1, :]), 
+                          usmooth[1:Nx, 0:Ny-1, 0:Nz-1, :]), axis = -1)
+Uxy2 = np.sum(np.multiply(np.conj(usmooth[1:Nx, 0:Ny-1, 0:Nz-1, :]), 
+                          usmooth[1:Nx, 1:Ny, 0:Nz-1, :]), axis = -1)
+Uxy3 = np.sum(np.multiply(np.conj(usmooth[1:Nx, 1:Ny, 0:Nz-1, :]), 
+                          usmooth[0:Nx-1, 1:Ny, 0:Nz-1, :]), axis = -1)
 
-Uyz1 = np.sum(np.multiply(np.conj(uOcc[0:Nx-1, 0:Ny-1, 0:Nz-1, :]), 
-                          uOcc[0:Nx-1, 1:Ny, 0:Nz-1, :]), axis = -1)
-Uyz2 = np.sum(np.multiply(np.conj(uOcc[0:Nx-1, 1:Ny, 0:Nz-1, :]), 
-                          uOcc[0:Nx-1, 1:Ny, 1:Nz, :]), axis = -1)
-Uyz3 = np.sum(np.multiply(np.conj(uOcc[0:Nx-1, 1:Ny, 1:Nz, :]), 
-                          uOcc[0:Nx-1, 0:Ny-1, 1:Nz, :]), axis = -1)
+Uyz1 = np.sum(np.multiply(np.conj(usmooth[0:Nx-1, 0:Ny-1, 0:Nz-1, :]), 
+                          usmooth[0:Nx-1, 1:Ny, 0:Nz-1, :]), axis = -1)
+Uyz2 = np.sum(np.multiply(np.conj(usmooth[0:Nx-1, 1:Ny, 0:Nz-1, :]), 
+                          usmooth[0:Nx-1, 1:Ny, 1:Nz, :]), axis = -1)
+Uyz3 = np.sum(np.multiply(np.conj(usmooth[0:Nx-1, 1:Ny, 1:Nz, :]), 
+                          usmooth[0:Nx-1, 0:Ny-1, 1:Nz, :]), axis = -1)
 
-Uzx1 = np.sum(np.multiply(np.conj(uOcc[0:Nx-1, 0:Ny-1, 0:Nz-1, :]), 
-                          uOcc[0:Nx-1, 0:Ny-1, 1:Nz, :]), axis = -1)
-Uzx2 = np.sum(np.multiply(np.conj(uOcc[0:Nx-1, 0:Ny-1, 1:Nz, :]), 
-                          uOcc[1:Nx, 0:Ny-1, 1:Nz, :]), axis = -1)
-Uzx3 = np.sum(np.multiply(np.conj(uOcc[1:Nx, 0:Ny-1, 1:Nz, :]), 
-                          uOcc[1:Nx, 0:Ny-1, 0:Nz-1, :]), axis = -1)
+Uzx1 = np.sum(np.multiply(np.conj(usmooth[0:Nx-1, 0:Ny-1, 0:Nz-1, :]), 
+                          usmooth[0:Nx-1, 0:Ny-1, 1:Nz, :]), axis = -1)
+Uzx2 = np.sum(np.multiply(np.conj(usmooth[0:Nx-1, 0:Ny-1, 1:Nz, :]), 
+                          usmooth[1:Nx, 0:Ny-1, 1:Nz, :]), axis = -1)
+Uzx3 = np.sum(np.multiply(np.conj(usmooth[1:Nx, 0:Ny-1, 1:Nz, :]), 
+                          usmooth[1:Nx, 0:Ny-1, 0:Nz-1, :]), axis = -1)
 
 # Use the formula for F and A in terms of overlaps and calculate sum_i(A_i*F_i)
 underHopf = (np.multiply(
