@@ -51,9 +51,11 @@ for nkx in range(0, Nx - 1):
     usmooth[nkx + 1, 0, 0, :] = np.multiply(
             uOcc[nkx + 1, 0, 0, :], np.exp( -1j * np.angle(Mold)))
     
+# The function gains the multiplier    
 Lamb = scalarprod(usmooth[0, 0, 0, :], usmooth[Nx - 1, 0, 0, :])
 
 nxs = np.linspace(0, Nx-1, Nx)
+# Distribute the multiplier among functions at kx in [0, 2pi]
 usmooth = np.multiply(usmooth, 
                       np.power(Lamb, 
                       - nxs[:, np.newaxis, np.newaxis, np.newaxis] / (Nx - 1)))
@@ -64,12 +66,21 @@ for nky in range(0, Ny - 1):
     usmooth[:, nky + 1, 0, :] = np.multiply(uOcc[:, nky + 1, 0, :], 
            np.exp( -1j * np.angle(Mold[:, np.newaxis])))
 
+# The function gains the multiplier
 Lamb2 = scalarprod(usmooth[:, 0, 0, :], usmooth[:, Ny - 1, 0, :])
+# Get the phase of lambda
+Langle2 = np.angle(Lamb2)
+# Construct smooth phase of lambda (without 2pi jumps)
+for nkx in range(0, Nx - 1):
+    if (np.abs(Langle2[nkx + 1] - Langle2[nkx]) > pi):
+        Langle2[nkx + 1 : Nx] = (Langle2[nkx + 1 : Nx] - 
+               np.sign(Langle2[nkx + 1] - Langle2[nkx]) * (2 * pi))
 
 nys = np.linspace(0, Ny-1, Ny)
+# Distribute the multiplier among functions at ky in [0, 2pi]
 usmooth = np.multiply(usmooth, 
-                      np.power(Lamb2[:, np.newaxis, np.newaxis, np.newaxis], 
-                      - nys[np.newaxis, :, np.newaxis, np.newaxis] / (Ny - 1)))
+                      np.exp(1j * np.multiply(Langle2[:, np.newaxis, np.newaxis, np.newaxis], 
+                      - nys[np.newaxis, :, np.newaxis, np.newaxis] / (Ny - 1))))
 
 # For all kx, ky make parallel transport along kz
 for nkz in range(0, Nz - 1):
@@ -78,17 +89,34 @@ for nkz in range(0, Nz - 1):
            np.exp( -1j * np.angle(Mold[:, :, np.newaxis])))
     
 Lamb3 = scalarprod(usmooth[:, :, 0, :], usmooth[:, :, Nz - 1, :])
+Langle3 = np.angle(Lamb3)
 
+# First make the lambda phase smooth along x-axis
+for nkx in range(0, Nx - 1):
+    jump = (np.abs(Langle3[nkx + 1, :] - Langle3[nkx, :]) > pi * np.ones(Ny))
+    Langlechange = np.multiply(jump, 
+           np.sign(Langle3[nkx + 1, :] - Langle3[nkx, :]) * (2 * pi))
+    Langle3[nkx + 1 : Nx, :] = (Langle3[nkx + 1 : Nx, :] - 
+           Langlechange[np.newaxis, :])
+               
+# Then make the phase smooth along y-axis similar for all x        
+for nky in range(0, Ny - 1):
+    if (np.abs(Langle3[0, nky + 1] - Langle3[0, nky]) > pi):
+        Langle3[:, nky + 1 : Ny] = (Langle3[:, nky + 1 : Ny] - 
+               np.sign(Langle3[0, nky + 1] - Langle3[0, nky]) * (2 * pi))
+        
 nzs = np.linspace(0, Nz-1, Nz)
+# Distribute the multiplier among functions at kz in [0, 2pi]
 usmooth = np.multiply(usmooth, 
-                      np.power(Lamb3[:, :, np.newaxis, np.newaxis], 
+                      np.exp(1j * np.multiply(Langle3[:, :, np.newaxis, np.newaxis], 
+                      - nzs[np.newaxis, np.newaxis, :, np.newaxis] / (Nz - 1))))
+mult = np.exp(1j * np.multiply(Langle3[:, :, np.newaxis, np.newaxis], 
                       - nzs[np.newaxis, np.newaxis, :, np.newaxis] / (Nz - 1)))
-mult = np.power(Lamb3[:, :, np.newaxis, np.newaxis], 
-                      - nzs[np.newaxis, np.newaxis, :, np.newaxis] / (Nz - 1))
 
-#plt.imshow(mult[4,:,:,0].real)
-#plt.colorbar
-#plt.show
+
+plt.imshow(Langle3)
+plt.colorbar()
+plt.show()
 
 plt.imshow(np.imag(mult[:,60,:,0]))
 plt.colorbar()

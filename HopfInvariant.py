@@ -73,7 +73,7 @@ underHopf = (np.multiply(
         (np.log(Uyz1)).imag))
 
 # Hopf invariant is a sum of A*F over the whole BZ                           
-Hopf = np.sum(underHopf)
+Hopf = - np.sum(underHopf)/(2*pi)**2
 
 print(Hopf)
 with open('Hopfinvariant.pickle', 'wb') as f:
