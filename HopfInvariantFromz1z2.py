@@ -10,6 +10,7 @@ Created on Tue Jul 17 11:41:42 2018
 import numpy as np
 from math import pi
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 # Import parameters for Hopf Hamiltonian from file params.py
 import params
@@ -34,7 +35,7 @@ lamb = np.divide(1, np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) +
                  np.power(np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
 
 # Analytic expression for Hopf integrand AF
-HopffromMathematica = np.multiply(np.power(lamb, 2), 
+HopffromMathematica = - np.multiply(np.power(lamb, 2), 
                                   2 * t * (np.multiply(np.cos(kky), np.cos(kkz)) + 
                                   np.multiply(np.cos(kkx), np.cos(kky)) + 
                                   np.multiply(np.cos(kkx), np.cos(kkz)) +
@@ -43,11 +44,15 @@ HopffromMathematica = np.multiply(np.power(lamb, 2),
                                                   np.cos(kkz))))
 
 # After summation we get Hopf invariant
-Hopf = (np.sum(HopffromMathematica[0:Nx-1, 0:Ny-1, 0:Nz-1]) * 
+Hopf = - (np.sum(HopffromMathematica[0:Nx-1, 0:Ny-1, 0:Nz-1]) * 
         (2*pi)/((Nx-1) * (Ny-1) * (Nz-1)))
 
 # Plot integrant at different kz
-plt.imshow(HopffromMathematica[:, :, 70], cmap='RdBu')
+#fig = plt.figure()
+#ax = fig.add_subplot(111, projection='3d')
+##ax = Axes3D(fig)
+#ax.plot_surface(kkx[:,:,0], kky[:,:,0], HopffromMathematica[:,:,70], cmap = 'viridis')
+plt.imshow(HopffromMathematica[:, :, 50], cmap='RdBu')
 plt.colorbar()
 plt.show()
 
