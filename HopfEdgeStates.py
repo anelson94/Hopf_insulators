@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Parameters
-h=1.1
+h=0.5
 t=1
 
 Nx=101
@@ -73,6 +73,9 @@ R = np.sum(np.multiply(np.power(np.abs(States),2),
 #ax.plot_surface(kkx, kky, Energy[:, :, 15])
 #ax.plot_surface(kkx, kky, Energy[:, :, 16])
 #plt.show()
+print(L[0,0,:], R[0,0,:])
+print(States[0, 50, 15, :], States[0, 50, 16, :])
+print(np.sum(np.power(States[0, 50, 16, :], 2)))
 kxrep = np.transpose(np.tile(kx, (2 * Nz, 1)))
 kyrep = np.transpose(np.tile(ky, (2 * Nz, 1)))
 fig = plt.figure()
