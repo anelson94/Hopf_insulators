@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Parameters
-h=1.1
+h=0.5
 t=1
 
 Nx=101
@@ -62,12 +62,12 @@ zline = np.arange(2 * Nz)
 weight = np.exp(-lamb * zline)
 # Left eigenstate
 L = np.sum(np.multiply(np.power(np.abs(States),2), 
-    weight[np.newaxis, np.newaxis, :, np.newaxis]), axis = -2)
+    weight[np.newaxis, np.newaxis, :, np.newaxis]), axis = (0, 1, 2))/Nx/Ny
 # Right eigenstate
 R = np.sum(np.multiply(np.power(np.abs(States),2), 
     np.flip(weight[np.newaxis, np.newaxis, :, np.newaxis], axis=-2)), 
-    axis = -2)
-
+    axis = (0, 1, 2))/Nx/Ny
+print(L.shape)
 #fig = plt.figure()
 #ax = fig.add_subplot(111, projection='3d')
 #ax.plot_surface(kkx, kky, Energy[:, :, 15])
@@ -75,6 +75,14 @@ R = np.sum(np.multiply(np.power(np.abs(States),2),
 #plt.show()
 kxrep = np.transpose(np.tile(kx, (2 * Nz, 1)))
 kyrep = np.transpose(np.tile(ky, (2 * Nz, 1)))
+Lrepx = np.tile(L, (Nx, 1))
+Lrepy = np.tile(L, (Ny, 1))
+Rrepx = np.tile(R, (Nx, 1))
+Rrepy = np.tile(R, (Ny, 1))
 fig = plt.figure()
-plt.scatter(kyrep, Energy[0, :, :], c = L[0, :, :] - R[0, :, :], s = 1, cmap='viridis')
+plt.scatter(kxrep, Energy[:, 50, :], c = Lrepx - Rrepx, s = 1, cmap='viridis')
 plt.colorbar()
+
+#fig = plt.figure()
+#plt.plot(kx, Energy[0, :, :], color = L - R)
+
