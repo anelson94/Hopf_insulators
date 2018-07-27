@@ -37,6 +37,6 @@ with open('Hopfeigen.pickle', 'rb') as f:
 #plt.show
 
 figy = plt.figure()
-plt.plot(kx, E[:, 50, 50, 0], kx, E[:, 50, 50, 1])
+plt.plot(kx, E[:, 50, 0, 0], kx, E[:, 50, 0, 1])
 plt.show
 print(E[:, 50, 25, 0])

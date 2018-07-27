@@ -13,7 +13,6 @@ import numpy as np
 from math import pi
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.colors import LinearSegmentedColormap
 
 # Parameters
 h=0.5
@@ -37,7 +36,7 @@ A = (np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) -
 B = - np.cos(kkx) - np.cos(kky) - h
 C = 2 * np.multiply(t * np.sin(kky) + 1j * np.sin(kkx), 
                 np.cos(kkx) + np.cos(kky) + h)
-D = 2 * (t * np.sin(kky) + 1j * np.sin(kkx))
+D = 2 * t * np.sin(kky) + 1j * np.sin(kkx)
 
 E = np.stack((np.stack((A, np.conj(C)), axis = -1), 
               np.stack((C, -A), axis = -1)), axis = -1)
@@ -58,13 +57,8 @@ for nz in range(0, Nz-1):
 
 # Set weight of eigenstates to define which are edge states
 # Weight multiplier
-lamb = 0.5
-#zline = np.arange(2 * Nz)
-
-# We take into accont that each atom has two orbitals 
-# which should have the same weight
-zline=np.stack((np.arange(Nz),np.arange(Nz)),axis=-1)
-zline=np.reshape(zline, 2*Nz, order='C')
+lamb = 1
+zline = np.arange(2 * Nz)
 weight = np.exp(-lamb * zline)
 # Left eigenstate
 L = np.sum(np.multiply(np.power(np.abs(States),2), 
@@ -74,37 +68,16 @@ R = np.sum(np.multiply(np.power(np.abs(States),2),
     np.flip(weight[np.newaxis, np.newaxis, :, np.newaxis], axis=-2)), 
     axis = -2)
 
-
 #fig = plt.figure()
 #ax = fig.add_subplot(111, projection='3d')
 #ax.plot_surface(kkx, kky, Energy[:, :, 15])
 #ax.plot_surface(kkx, kky, Energy[:, :, 16])
 #plt.show()
-
-# Define colormap 
-cdict1 = {'red':   ((0.0, 0.0, 0.0),
-                   (0.5, 0.0, 0.1),
-                   (1.0, 1.0, 1.0)),
-
-         'green': ((0.0, 0.0, 0.0),
-                   (1.0, 0.0, 0.0)),
-
-         'blue':  ((0.0, 0.0, 1.0),
-                   (0.5, 0.1, 0.0),
-                   (1.0, 0.0, 0.0))
-        }
-
-blue_red1 = LinearSegmentedColormap('BlueRed1', cdict1)
-
+print(L[0,0,:], R[0,0,:])
+print(States[0, 50, 15, :], States[0, 50, 16, :])
+print(np.sum(np.power(States[0, 50, 16, :], 2)))
 kxrep = np.transpose(np.tile(kx, (2 * Nz, 1)))
 kyrep = np.transpose(np.tile(ky, (2 * Nz, 1)))
-nkx = 50
 fig = plt.figure()
-#plt.scatter(kyrep, Energy[nkx, :, :], c = L[nkx, :, :] - R[nkx, :, :], s = 1, cmap=blue_red1)
-plt.scatter(kyrep, Energy[:, nkx, :], c = L[:, nkx, :] - R[:, nkx, :], s = 1, cmap=blue_red1)
+plt.scatter(kyrep, Energy[0, :, :], c = L[0, :, :] - R[0, :, :], s = 1, cmap='viridis')
 plt.colorbar()
-
-#cross = (np.abs(Energy[:, :, 15]-Energy[:, :, 16])<0.05)
-#plt.figure()
-#plt.imshow(cross, cmap='winter')
-#plt.show()

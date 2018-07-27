@@ -53,11 +53,11 @@ np.savetxt('xdiffkz.txt', xdiffkz, delimiter='\n', header='Difference between HW
 
 #Plot the cut of HW Centers at exact value of kz/y as a function of ky/z  
 figy = plt.figure()
-plt.plot(ky,xAverage[:,25])
+plt.plot(ky,xAverage[:,45])
 plt.show
 
 figz = plt.figure()
-plt.plot(kz,xAverage[25,:])
+plt.plot(kz,xAverage[45,:])
 plt.show
     
 #fig = plt.figure()
