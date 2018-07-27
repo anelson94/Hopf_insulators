@@ -1,2 +1,6 @@
 *.txt
 *.pickle
+*.png
+*.docx
+*.tmp
+*\workspace.ini
