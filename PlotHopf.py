@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 
 with open('Hopfinvariant.pickle', 'rb') as f:
     underHopf = pickle.load(f)
-    
+
+plt.figure()    
 plt.imshow(underHopf[:, :, 50], cmap='RdBu')
 plt.colorbar()
 plt.show()
