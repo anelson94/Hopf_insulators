@@ -50,7 +50,7 @@ sigmazstack = np.tile(sigmaz, (Nx, Ny, Nz, 1, 1))
 # Hopf Hamiltonian is a mapping function from T^3 to S^2.
 # It has two energy states, one of them occupied.
 
-lamb = np.divide(1, np.power(np.sin(kkx), 2) + np.power(np.sin(kky), 2) + 
+lamb = np.divide(1, np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) + 
                  np.power(np.sin(kkz), 2) + 
                  np.power(np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
 
