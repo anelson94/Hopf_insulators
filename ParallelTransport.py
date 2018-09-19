@@ -35,7 +35,7 @@ def scalarprod(A, B):
     return Prod
 
 # Import eigenstates of Hopf Humiltonian
-with open('Hopfeigen.pickle', 'rb') as f:
+with open('Hopfgeneigen.pickle', 'rb') as f:
     [E, u] = pickle.load(f)
 
 # Occupied states correspond to smaller eigenvalues
@@ -50,7 +50,7 @@ for nkx in range(0, Nx - 1):
     Mold = scalarprod(usmooth[nkx, 0, 0, :], uOcc[nkx + 1, 0, 0, :])
     usmooth[nkx + 1, 0, 0, :] = np.multiply(
             uOcc[nkx + 1, 0, 0, :], np.exp( -1j * np.angle(Mold)))
-    
+
 # The function gains the multiplier    
 Lamb = scalarprod(usmooth[0, 0, 0, :], usmooth[Nx - 1, 0, 0, :])
 
@@ -64,12 +64,14 @@ usmooth = np.multiply(usmooth,
 for nky in range(0, Ny - 1):
     Mold = scalarprod(usmooth[:, nky, 0, :], uOcc[:, nky + 1, 0, :])
     usmooth[:, nky + 1, 0, :] = np.multiply(uOcc[:, nky + 1, 0, :], 
-           np.exp( -1j * np.angle(Mold[:, np.newaxis])))
+                                  np.exp( -1j * np.angle(Mold[:, np.newaxis])))
 
 # The function gains the multiplier
 Lamb2 = scalarprod(usmooth[:, 0, 0, :], usmooth[:, Ny - 1, 0, :])
+
 # Get the phase of lambda
 Langle2 = np.angle(Lamb2)
+
 # Construct smooth phase of lambda (without 2pi jumps)
 for nkx in range(0, Nx - 1):
     if (np.abs(Langle2[nkx + 1] - Langle2[nkx]) > pi):
@@ -114,28 +116,6 @@ mult = np.exp(1j * np.multiply(Langle3[:, :, np.newaxis, np.newaxis],
                       - nzs[np.newaxis, np.newaxis, :, np.newaxis] / (Nz - 1)))
 
 
-plt.imshow(Langle3)
-plt.colorbar()
-plt.show()
-
-plt.imshow(np.imag(mult[:,60,:,0]))
-plt.colorbar()
-plt.show()
-plt.imshow(np.imag(Lamb3))
-plt.show()
-print(np.max(np.angle(mult[:,60,:,0])))
-#figy = plt.figure()
-#plt.plot(np.linspace(0, Nx - 1 ,Nx),usmooth[:,6,7,0].imag)
-#plt.show
-#figy = plt.figure()
-#plt.plot(np.linspace(0, Nx - 1 ,Nx),usmooth[:,6,7,0].real)
-#plt.show
-#figy = plt.figure()
-#plt.plot(np.linspace(0, Nx - 1, Nx),usmooth[:,6,7,1].imag)
-#plt.show
-#figy = plt.figure()
-#plt.plot(np.linspace(0, Nx - 1, Nx),usmooth[:,6,7,1].real)
-#plt.show
 with open('Hopfsmoothstates.pickle', 'wb') as f:
     pickle.dump(usmooth, f)
 #print(usmooth[13,6,100,0] - usmooth[13,6,0,0])
