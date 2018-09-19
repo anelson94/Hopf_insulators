@@ -24,9 +24,13 @@ aymz = 0.7
 b = 0.2
 b2 = 0.4
 
-x = np.linspace(-2*ax, 2*ax, 61)
-y = np.linspace(-2*ay, 2*ay, 61)
-z = np.linspace(-2*az, 2*az, 31)
+Nx = 61
+Ny = 61
+Nz = 31
+
+x = np.linspace(-3*ax, 3*ax, Nx)
+y = np.linspace(-3*ay, 3*ay, Ny)
+z = np.linspace(-3*az, 3*az, Nz)
 
 # Define a grid
 [xx, yy, zz] = np.meshgrid(x, y, z, indexing = 'ij')
@@ -60,7 +64,24 @@ Psi1 = (np.exp( - 2*pw((xx - ax)/ax, 2) - 2*pw(yy/b, 2) - 2*pw(zz/b, 2)) +
               2*pw((xx - zz)/b, 2) - 2*pw(yy/b, 2)) +
        np.exp( - 2*pw((yy + zz + aypz)/aypz, 2) - 
               2*pw((yy - zz)/b2, 2) - 2*pw(xx/b2, 2)))
-      
+
+# Normalize the Orbital wavefunction        
+sqPsi1 = pw(Psi1, 2) 
+
+sqPsi1[0, :, :] = sqPsi1[0, :, :] / 2
+sqPsi1[Nx-1, :, :]  = sqPsi1[Nx-1, :, :] / 2 
+sqPsi1[:, 0, :] = sqPsi1[:, 0, :] / 2
+sqPsi1[:, Ny-1, :]  = sqPsi1[:, Ny-1, :] / 2    
+sqPsi1[:, :, 0] = sqPsi1[:, :, 0] / 2
+sqPsi1[:, :, Nz-1]  = sqPsi1[:, :, Nz-1] / 2 
+
+# Calculate the norm using trapeze method
+modPsi1 = np.sum(sqPsi1) * 6*ax / (Nx-1) * 6*ay / (Ny-1) * 6*az / (Nz-1)
+Psi1 = Psi1 / modPsi1
+sqPsi1 = []
+modPsi1 = []
+
+# The second orbital      
 Psi2 = ( - np.exp( - 2*pw((xx - ax)/ax, 2) - 2*pw(yy/b, 2) - 2*pw(zz/b, 2)) -
        np.exp( - 2*pw((xx + yy - axpy)/axpy, 2) - 
               2*pw((yy - xx)/b, 2) - 2*pw(zz/b, 2)) + 
@@ -89,6 +110,21 @@ Psi2 = ( - np.exp( - 2*pw((xx - ax)/ax, 2) - 2*pw(yy/b, 2) - 2*pw(zz/b, 2)) -
               2*pw((xx - zz)/b, 2) - 2*pw(yy/b, 2)) +
        np.exp( - 2*pw((yy + zz + aypz)/aypz, 2) - 
               2*pw((yy - zz)/b, 2) - 2*pw(xx/b, 2)))
+
+# Normalization
+sqPsi2 = pw(Psi2, 2) 
+
+sqPsi2[0, :, :] = sqPsi2[0, :, :] / 2
+sqPsi2[Nx-1, :, :]  = sqPsi2[Nx-1, :, :] / 2 
+sqPsi2[:, 0, :] = sqPsi2[:, 0, :] / 2
+sqPsi2[:, Ny-1, :]  = sqPsi2[:, Ny-1, :] / 2    
+sqPsi2[:, :, 0] = sqPsi2[:, :, 0] / 2
+sqPsi2[:, :, Nz-1]  = sqPsi2[:, :, Nz-1] / 2 
+
+modPsi2 = np.sum(sqPsi2) * 6*ax / (Nx-1) * 6*ay / (Ny-1) * 6*az / (Nz-1)
+Psi2 = Psi2 / modPsi2
+sqPsi2 = []
+modPsi2 = []
 
 # Plot isosurfaces of basis orbitals
 mlab.contour3d(Psi1, contours=4, transparent=False)
