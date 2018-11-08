@@ -3,6 +3,12 @@
 *.png
 *.docx
 *.tmp
-*\workspace.ini
+*/workspace.ini
+.idea/*.*
+.idea/*/*.*
+.vscode/*.*
 .spyproject/workspace.ini
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store
 __pycache__/params.cpython-36.pyc
