@@ -13,3 +13,9 @@
 */*/.DS_Store
 __pycache__/params.cpython-36.pyc
 FFTcheck.py
+plt_ex.py
+projectionOnOrbitals.py
+ploteExample.py
+.spyproject/workspace.ini
+.spyproject/workspace.ini
+BerryCurvFlowAtCriticalPoint.py
