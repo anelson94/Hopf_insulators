@@ -12,3 +12,4 @@
 */.DS_Store
 */*/.DS_Store
 __pycache__/params.cpython-36.pyc
+FFTcheck.py
