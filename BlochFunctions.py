@@ -36,79 +36,64 @@ def blochperiodic(k_point, x_row, n_g):
     """construct periodic part of Bloch function"""
     # obtain coefficients
     energy, ck_g = np.linalg.eig(hamiltmatrix(n_g, k_point))
+    index = np.argmin(energy)
     # G points for exponent e^iGx
     row_g = 2 * pi * (np.asarray(range(n_g)) - (n_g - 1) / 2)
     # the size is n_g * Nx
-    ck_g_cut = ck_g[:, 0]
+    ck_g_cut = ck_g[:, index]
     ck_g_cut = ck_g_cut[:, np.newaxis]
     x_ = x_row[np.newaxis, :]
     row_g_ = row_g[:, np.newaxis]
     # set exponent
     exp_g = np.exp(1j * x_ * row_g_)
     # obtain coefficient columns for k point as a function of x
-    ck = np.sum(np.multiply(ck_g_cut, exp_g), axis=0) / n_g
+    ck = np.sum(np.multiply(ck_g_cut, exp_g), axis=0)
     return ck
 
 
 def paraltransport(u):
     n_k = np.ma.size(u, 0)
+    # Normalization
+    u_abs = np.sqrt(np.sum(np.conj(u) * u, axis=-1))
+    u = np.divide(u, u_abs[:, np.newaxis])
     usmooth = np.empty(u.shape, dtype=complex)
     # initial value for smooth function is equal to original
     # function
     usmooth[0, :] = u[0, :]
     for idk in range(n_k - 1):
-        m_old = np.conj(usmooth[idk, :]) * u[idk + 1, :]
+        # the overlap is integral over unit cell of <u'(k)|u(k+dk)>
+        m_old = (np.sum(np.conj(usmooth[idk, 0: round(Nx / x_cell)])
+                        * u[idk + 1, 0: round(Nx / x_cell)], axis=-1)
+                 / Nx * x_cell)  # 0: round(Nx / x_cell)   * x_cell
+        # make the overlap in smooth function real
         usmooth[idk + 1, :] = u[idk + 1, :] * np.exp(-1j * np.angle(m_old))
-    lamb = np.conj(usmooth[0, :]) * usmooth[n_k - 1, :]
-    print(lamb.shape)
+    # calculate how the function in k = 0 differs from k = 2pi
+    # it should be e^(i 2pi x)
+    xx = np.asarray(range(round(Nx / x_cell))) / Nx * x_cell  # / x_cell
+    lamb = (np.sum(np.conj(usmooth[0, 0: round(Nx / x_cell)])
+                   * usmooth[n_k - 1, 0: round(Nx / x_cell)]
+                   * np.exp(1j * 2 * pi * xx[np.newaxis, :]), axis=-1)
+            / Nx * x_cell)  # 0: round(Nx / x_cell)   * x_cell
     nks = np.linspace(0, n_k - 1, n_k)
     nks = nks[:, np.newaxis]
     # Distribute the multiplier among functions at kx in [0, 2pi]
-    usmooth = np.multiply(usmooth, np.power(lamb, - nks / (n_k - 1)))
+    usmooth = np.multiply(usmooth,
+                          np.exp(-1j * np.angle(lamb) * nks / (n_k - 1)))
     return usmooth
 
 
 # number of points in x - space
-Nx = 300
+Nx = 600
 # number f unit cells
-x_cell = 60
+x_cell = 15
 # number of k points
-Nk = 200
+Nk = 400
 # number of G points
-NG = 601
-
-# k = 2
-# xx = 0.3
-# # !!! Chech ck for one x
-# E, ck_G = np.linalg.eig(hamiltmatrix(NG, k))
-# # G points for exponent e^iGx
-# row_G = 2 * pi * (np.asarray(range(NG)) - (NG - 1) / 2)
-# ck_G = ck_G[:, 0]
-# ck_G = paraltransport(ck_G, NG)
-# # set exponent
-# exp_G = np.exp(1j * xx * row_G)
-# # obtain coefficient columns for k point as a function of x
-# ck = np.sum(ck_G * exp_G) / NG
-# psi = ck * np.exp(1j * k * xx)
-# print(psi)
-
-# x = np.array([0, 0.3, 1.3, 2, 3])
-# uk1 = blochperiodic(1, x, NG)
-# uk2 = blochperiodic(1 + 2 * pi, x, NG)
-# Psi1 = uk1 * np.exp(1j * 0 * x)
-# Psi2 = uk2 * np.exp(1j * 2 * pi * x)
-# print(uk1)
-# print(uk2)
-
-# print(blochperiodic(1, np.array([0, 0.3, 1, 2, 3]), NG))
+NG = 401
 
 # !!!! main loop
 # x vector
 x = np.asarray(range(Nx)) / Nx * x_cell
-# Wannier = np.zeros(10)
-# x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-uk0 = blochperiodic(0, x, NG)
-Wannier = uk0
 uk = np.empty((Nk, Nx), dtype=complex)  # columns: one x, rows: one k
 for nk in range(Nk):
     "for each k calculate coeffitients and then remember them in a matrix"
@@ -117,15 +102,18 @@ for nk in range(Nk):
     # periodic part of Bloch funcion
     uk[nk, :] = blochperiodic(k, x, NG)
 
-uk_smooth = paraltransport(uk)
+# Parallel trnsport to maka u(k) smooth
+u_smooth = paraltransport(uk)
+k = np.linspace(0, 2 * pi, Nk)
+# Calculate Bloch function
+psi = u_smooth * np.exp(1j * k[:, np.newaxis] * x[np.newaxis, :])
 
-k_row = np.linspace(0, 2 * pi, Nk)
 # calculate Wannier function as a sum over k
-Wannier = np.sum(uk_smooth[0:Nk - 1, :]
-                 * np.exp(1j * k_row[0:Nk - 1, np.newaxis] * x[np.newaxis, :]),
-                 axis=0)
+Wannier = np.sum(psi[0:Nk - 1, :], axis=0) / (Nk - 1)
 
-Wannier = Wannier / Nk
 
 with open('WannieFromBloch.pickle', 'wb') as f:
     pickle.dump([Wannier, Nx, x_cell, NG], f)
+
+with open('SmoothBloch.pickle', 'wb') as f:
+    pickle.dump([psi], f)
