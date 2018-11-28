@@ -5,7 +5,7 @@ Created on Tue Jul  3 16:58:00 2018
 @author: aleksandra
 """
 
-# Constract initial Bloch basis by projecting of Gaussian functions 
+# Construct initial Bloch basis by projecting of Gaussian functions
 # with centers in (0,0,0) on the obtained Bloch basis
 
 import numpy as np

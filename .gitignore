@@ -19,3 +19,5 @@ ploteExample.py
 .spyproject/workspace.ini
 .spyproject/workspace.ini
 BerryCurvFlowAtCriticalPoint.py
+PlotBlochFunctions.py
+Outputs/HopfHybridWannierCenters.pages
