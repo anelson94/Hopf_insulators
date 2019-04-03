@@ -3,6 +3,11 @@
 *.png
 *.docx
 *.tmp
+*.dat
+*.dat_l
+NotNeeded/*.*
+venv/
+.spyproject/
 */workspace.ini
 .idea/*.*
 .idea/*/*.*
@@ -21,3 +26,5 @@ ploteExample.py
 BerryCurvFlowAtCriticalPoint.py
 PlotBlochFunctions.py
 Outputs/HopfHybridWannierCenters.pages
+__pycache__/params.cpython-37.pyc
+.spyproject/workspace.ini
