@@ -145,4 +145,4 @@ ftemp = open('model_temporary.dat', 'r')
 # Write the hoppings
 f.write(ftemp.read())
 ftemp.close()
-f.close()
+

@@ -48,8 +48,8 @@ Kx = np.linspace(pi, 2 * pi, Nx)
 Ky = np.linspace(pi, 2 * pi, Ny)
 
 # Remove values where determinant is zero
-Kx = Kx[1:Nx - 1]
-Ky = Ky[1:Ny - 1]
+# Kx = Kx[1:Nx - 1]
+# Ky = Ky[1:Ny - 1]
 
 # Add second part of BZ
 Kx = np.concatenate((Kx - pi, Kx), axis=None)

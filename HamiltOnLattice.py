@@ -18,12 +18,20 @@ import pickle
 # Import parameters for Hopf Hamiltonian from file params.py
 import params
 
-t = params.t
-h = params.h
+# t = params.t
+# h = params.h
+#
+# Nx = params.Nx
+# Ny = params.Ny
+# Nz = params.Nz
 
-Nx = params.Nx
-Ny = params.Ny
-Nz = params.Nz 
+t = 1
+h = 0
+alpha = 1  # multiplier in front of kx
+
+Nx = 101
+Ny = 101
+Nz = 101
 
 kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)
@@ -50,20 +58,22 @@ sigmazstack = np.tile(sigmaz, (Nx, Ny, Nz, 1, 1))
 # Hopf Hamiltonian is a mapping function from T^3 to S^2.
 # It has two energy states, one of them occupied.
 
-lamb = np.divide(1, np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) + 
+lamb = np.divide(1, np.power(np.sin(alpha * kkx), 2)
+                 + t**2 * np.power(np.sin(kky), 2) +
                  np.power(np.sin(kkz), 2) + 
-                 np.power(np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
+                 np.power(np.cos(alpha * kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
 
-Hx = np.multiply(2 * lamb, np.multiply(np.sin(kkx), np.sin(kkz)) + 
-                 t*np.multiply(np.sin(kky), (np.cos(kkx) + np.cos(kky) + 
+Hx = np.multiply(2 * lamb, np.multiply(np.sin(alpha * kkx), np.sin(kkz)) +
+                 t*np.multiply(np.sin(kky), (np.cos(alpha * kkx) + np.cos(kky) +
                                              np.cos(kkz) + h)))
-Hy = np.multiply(2 * lamb, t*np.multiply(np.sin(kky), np.sin(kkz)) -
-                 np.multiply(np.sin(kkx), (np.cos(kkx) + np.cos(kky) + 
-                                           np.cos(kkz) + h)))
-Hz = np.multiply(lamb, (np.power(np.sin(kkx), 2) + 
+Hy = np.multiply(
+    2 * lamb, t*np.multiply(np.sin(kky), np.sin(kkz))
+    - np.multiply(np.sin(alpha * kkx),
+                  (np.cos(alpha * kkx) + np.cos(kky) + np.cos(kkz) + h)))
+Hz = np.multiply(lamb, (np.power(np.sin(alpha * kkx), 2) +
                         t**2 * np.power(np.sin(kky), 2) - 
                         np.power(np.sin(kkz), 2) - 
-                        np.power((np.cos(kkx) + np.cos(kky) + 
+                        np.power((np.cos(alpha * kkx) + np.cos(kky) +
                                   np.cos(kkz) + h), 2)))
 
 Hx = Hx[:, :, :, np.newaxis, np.newaxis]

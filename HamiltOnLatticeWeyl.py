@@ -16,12 +16,12 @@ def stackmatr(matr):
 
 
 t = 1
-h = 3
-Asquare = 1  # Splitting constant
+h = -2
+Asquare = 0  # Splitting constant
 
-Nx = 200
+Nx = 201
 Ny = 201
-Nz = 200
+Nz = 201
 
 kx = np.linspace(0, 2 * pi, Nx)
 ky = np.linspace(0, 2 * pi, Ny)
@@ -42,6 +42,9 @@ sigmazstack = stackmatr(sigmaz)
 
 # Construct not normalized Hamiltonian with additional splitting term
 
+# # kx -> 2kx
+# kkx = 3 * kkx
+
 Hx = 2 * (np.multiply(np.sin(kkx), np.sin(kkz)) +
           t * np.multiply(np.sin(kky),
                           (np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h)))
@@ -52,6 +55,14 @@ Hz = (np.power(np.sin(kkx), 2) + t ** 2 * np.power(np.sin(kky), 2)
       - np.power(np.sin(kkz), 2)
       - np.power((np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h), 2)
       + Asquare)
+
+# Normalize Hamiltonian
+# Norm = np.divide(1, np.sqrt(np.power(Hx, 2) + np.power(Hy, 2)
+#                             + np.power(Hz, 2)))
+#
+# Hx = Hx * Norm
+# Hy = Hy * Norm
+# Hz = Hz * Norm
 
 Hx = Hx[:, :, :, np.newaxis, np.newaxis]
 Hy = Hy[:, :, :, np.newaxis, np.newaxis]

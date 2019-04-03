@@ -78,7 +78,7 @@ def fourier(kkx, kky, idx, n):
 # parameters
 p = 1
 q = 1
-h = 2
+h = 0
 t = 1
 
 Nx = 101
@@ -104,7 +104,7 @@ Hsurf = np.stack((np.stack((V2, V1), axis=-1),
 
 # Add surface potential
 H_slab[:, 0:2, 0:2] += Hsurf
-H_slab[:, -2:, -2:] += Hsurf
+H_slab[:, -2:, -2:] += -Hsurf
 
 
 # Calculate eigenvalues and eigenvectors of H-Hopf
@@ -153,7 +153,7 @@ blue_red1 = LinearSegmentedColormap('BlueRed1', cdict1)
 xcoords = [0, sqrt(2), 1 + sqrt(2), 2 + sqrt(2)]
 fig = plt.figure()
 plt.scatter(Kxrep, Energy[:, :], c=L[:, :] - R[:, :], s=1, cmap=blue_red1)
-plt.ylim(-30, 30)
+# plt.ylim(-30, 30)
 plt.xlim(0, 2 + sqrt(2))
 plt.xticks(xcoords, ['$\Gamma$', 'M', 'K', '$\Gamma$'])
 for xc in xcoords:

@@ -17,7 +17,7 @@ n3 = np.array([0, 0, -1])
 # Parameters of Hopf Hamiltonian
 t = 1
 h = 2
-p = 3
+p = 2
 q = 1
 
 # Set the space of (kx, ky, kz) on the 3d torus T3
