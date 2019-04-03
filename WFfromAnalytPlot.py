@@ -72,31 +72,38 @@ WFoccx_abs = np.sqrt(np.sum(WFoccx * np.conj(WFoccx), axis=-1))
 WF_forplot = np.real(WFoccx_abs)
 # WFocc_max, coord_max = maxarray(WF_forplot)
 # coord_max = coord_max * Nunitcell / Nx1d
-coord = np.linspace(0, Nx1d, Nx1d)
+coord = np.linspace(0, Nx1d - 1, Nx1d)
 # WF_max_len = WFocc_max.size
 print(WF_forplot)
 
 # Fitting
-xcoo = coord[3:13:2]  # _max
-ycoo = np.log(WF_forplot[3:13:2])  # _max
+xcoo = coord[1:15:2]  # _max
+ycoo = np.log(WF_forplot[1:15:2])  # _max
 popt, pcov = curve_fit(fitfunc, xcoo, ycoo)#,
                        # bounds=([-np.inf, -np.inf, -np.inf],
                        #         [np.inf, np.inf, np.inf]))
 
 print(pcov)
 
-matplotlib.rcParams.update({'font.size': 13})
+matplotlib.rcParams.update({'font.size': 25})
 print('Plot start')
 # Check that WFs exponentially decay
-plt.figure(figsize=(8, 6))
-plt.xlabel('z', size=15)  # $(100)$ direction
-plt.ylabel('$|W|$', size=15)  # _{Hybrid}
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_axes([0.15, 0.15, 0.8, 0.8])
+ax.set_xlabel('Unit cell number', size=25)  # $(100)$ direction
+ax.set_ylabel('$|W|$', size=25)  # _{Hybrid}
+ax.set_xticks([0, 5, 10, 15])
+ax.set_xticklabels(('0', '5', '10', '15'), size=20)
+ax.xaxis.set_minor_locator(plt.MultipleLocator(1))
+ax.tick_params(which='both', labelsize=20, width=2)
+ax.tick_params(axis='x', which='both', length=4)
+plt.setp(ax.spines.values(), linewidth=2)
 # plt.text(14, -2, '$a=1$ - lattice period')
 plt.yscale('log')
 # plt.xscale('log')
 # plt.plot(coord_max, WFocc_max, 'k.')
-plt.plot(coord, WF_forplot, 'k.', markersize=7)
-plt.plot(coord[1:], np.exp(fitfunc(coord[1:], *popt)), 'r-',
+plt.plot(coord[:16], WF_forplot[:16], 'k.', markersize=15)
+plt.plot(coord[1:16], np.exp(fitfunc(coord[1:16], *popt)), 'r-', linewidth=4.0,
          label=r'fit: $\gamma x^{\alpha} e^{-\beta x}$, '
                r'with ''\n'
                r'$\alpha=$%5.3f,''\n'
