@@ -62,6 +62,17 @@ def pol_by_angle(kx, ky, nz):
     return -p001 / 2 / pi
 
 
+def pol_GMKG(nk, nz):
+    """Pz on the lines GMKG"""
+    p = np.empty(3 * nk - 2)
+    for ik in range(nk):
+        k = pi * ik / (nk - 1)
+        p[ik] = -pol_by_angle(k, k, nz)
+        p[nk + ik - 1] = -pol_by_angle(pi, pi - k, nz)
+        p[2 * nk + ik - 2] = -pol_by_angle(pi - k, 0, nz)
+    return p
+
+
 t = 1
 
 Nk = 1000
@@ -74,33 +85,25 @@ hchi1 = [1.1, 1.5, 2]
 Nhchi1 = len(hchi1)
 
 
-P001chi2 = np.empty((3 * Nkgrid - 2, Nhchi2 + Nhchi1))
-P001chi1 = np.empty((Nhchi1, 3 * Nkgrid - 2))
+P001chi2 = np.empty((3 * Nkgrid - 2, Nhchi2))
+P001chi1 = np.empty((3 * Nkgrid - 2, Nhchi1))
 
 for ih in range(Nhchi2):
-    for ik in range(Nkgrid):
-        h = hchi2[ih]
-        K = pi * ik / (Nkgrid - 1)
-        P001chi2[ik, ih] = -pol_by_angle(K, K, Nk)
-        P001chi2[Nkgrid + ik - 1, ih] = -pol_by_angle(pi, pi - K, Nk)
-        P001chi2[2 * Nkgrid + ik - 2, ih] = -pol_by_angle(pi - K, 0, Nk)
+    h = hchi2[ih]
+    P001chi2[:, ih] = pol_GMKG(Nkgrid, Nk)
 for ih in range(Nhchi1):
-    for ik in range(Nkgrid):
-        h = hchi1[ih]
-        K = pi * ik / (Nkgrid - 1)
-        P001chi2[ik, Nhchi2 + ih] = -pol_by_angle(K, K, Nk)
-        P001chi2[Nkgrid + ik - 1, Nhchi2 + ih] = -pol_by_angle(pi, pi - K, Nk)
-        P001chi2[2 * Nkgrid + ik - 2, Nhchi2 + ih] = -pol_by_angle(pi - K, 0, Nk)
+    h = hchi1[ih]
+    P001chi1[:, ih] = pol_GMKG(Nkgrid, Nk)
 
 K_part = np.linspace(0, 1, Nkgrid)
 K_plot = np.concatenate((K_part * sqrt(2), sqrt(2) + K_part[1:],
                          sqrt(2) + 1 + K_part[1:]))
-K_plot_chi2 = np.transpose(np.tile(K_plot, (Nhchi1 + Nhchi2, 1)))
 
 # Sizes for paper
 fig = plt.figure(figsize=[12, 7])
-sns.set_palette(sns.color_palette(['salmon', 'crimson', 'darkred', 'darkblue', 'blue', 'dodgerblue'])) # Spectral RdYlGn
-# sns.set_palette(sns.diverging_palette(10, 220, sep=80, n=Nhchi1 + Nhchi2, center='light'))
+sns.set_palette(sns.color_palette(['salmon', 'crimson', 'darkred',
+                                   'darkblue', 'blue', 'dodgerblue']))
+
 ax = fig.add_axes([0.06, 0.11, 0.92, 0.83])
 fs = 36
 fss = 30
@@ -138,12 +141,25 @@ ax.set_yticklabels([r'$0$', r'$1$'])
 for axis in ['top', 'bottom', 'left', 'right']:
     ax.spines[axis].set_linewidth(ls)
 
-ax.plot(K_plot_chi2, P001chi2, marker='.',
-        linestyle='solid', linewidth=ls,
-        markersize=ps)  # np.linspace(0, 3, 3 * Nkgrid - 2)
+settings = {'marker': '.', 'linewidth': ls, 'markersize': ps}
+
+ax.plot(K_plot, P001chi2[:, 0],
+        linestyle='solid', label='$h=0$', color='salmon', **settings)
+ax.plot(K_plot, P001chi2[:, 1],
+        linestyle='solid', label='$h=0.5$', color='crimson', **settings)
+ax.plot(K_plot, P001chi2[:, 2],
+        linestyle='solid', label='$h=0.9$', color='darkred', **settings)
+
+ax.plot(K_plot, P001chi1[:, 0],
+        linestyle='--', label='$h=1.1$', color='darkblue', **settings)
+ax.plot(K_plot, P001chi1[:, 1],
+        linestyle='--', label='$h=1.5$', color='blue', **settings)
+ax.plot(K_plot, P001chi1[:, 2],
+        linestyle='--', label='$h=2$', color='dodgerblue', **settings)
+
 for xc in x_ticks:
     ax.axvline(x=xc, color='k', linewidth=ls)
-plt.legend(('$h=0$', '$h=0.5$', '$h=0.9$', '$h=1.1$', '$h=1.5$', '$h=2$'), fontsize=fsss, loc='upper left')
+plt.legend(fontsize=fsss, loc='upper left')
 # plt.text(0.5, 0.8, '$k_y=0$', fontsize=fss)
 # plt.savefig('Images/HybridWannierFunctions/WCC_halfBZ_h-15_GMKG.png',
 #             bbox_inches=None)
