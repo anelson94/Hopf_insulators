@@ -25,16 +25,16 @@ h = params.h
 # Nx = params.Nx
 # Ny = params.Ny
 # Nz = params.Nz
-Nx = 101
-Ny = 101
-Nz = 101
+Nx = 100
+Ny = 100
+Nz = 100
 
 kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)
 kz = np.linspace(0, 2*pi, Nz)
 
 # Import eigenstates of Hopf Humiltonian
-with open('HopfeigenWeyl.pickle', 'rb') as f:
+with open('Berryeigen.pickle', 'rb') as f:
     [E, u] = pickle.load(f)
 
 # Occupied states correspond to smaller eigenvalues

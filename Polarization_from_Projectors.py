@@ -43,13 +43,13 @@ def projector_y(u):
 
 # Import eigenstates of Hopf Humiltonian
 # with open('Hopfgeneigen.pickle', 'rb') as f:
-with open('HopfeigenWeyl.pickle', 'rb') as f:
+with open('Hopfeigen.pickle', 'rb') as f:
     [E, u] = pickle.load(f)
 uocc = u[:, :, :, :, 0]
 
-Nx = 100
-Ny = 100
-Nz = 1000
+Nx = 101
+Ny = 101
+Nz = 101
 
 Proj_all = np.identity(2, dtype=complex)
 Proj_all = Proj_all[np.newaxis, np.newaxis, :, :]

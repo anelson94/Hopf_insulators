@@ -22,8 +22,8 @@ def scalarprod(a, b):
 with open('Hopfsmoothstates.pickle', 'rb') as f:
     usmooth = pickle.load(f)
 
-Nz = 1000
-Nkgrid = 50
+Nz = 101
+Nkgrid = 101
 
 P001 = np.real(
     1j * np.sum(
@@ -31,7 +31,15 @@ P001 = np.real(
         - scalarprod(usmooth[:, :, :Nz - 1, :], usmooth[:, :, 1:Nz, :]),
         axis=-1) / 2 / pi)
 
-print(np.sum(P001) / Nkgrid**2)
+# P100 = np.real(
+#     1j * np.sum(
+#         1
+#         - scalarprod(usmooth[:Nz - 1, :, :, :], usmooth[1:Nz, :, :, :]),
+#         axis=-1) / 2 / pi)
+
+P001_avg = np.sum(P001) / Nkgrid**2
+
+print(np.max(np.abs(P001-P001_avg)))
 plt.figure()
 plt.imshow(P001)
 # plt.plot(Kz[0: Nk - 1], np.real((psi1[:Nk - 1] - psi1[1:]))

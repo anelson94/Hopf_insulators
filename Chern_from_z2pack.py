@@ -24,8 +24,8 @@ def hamiltonian(k):
     ])
 
 
-h = 1
-A = -2.5
+h = -1.5
+A = 0
 system = z2pack.hm.System(hamiltonian)
 # Nz = 31
 # chern = np.empty(Nz)
@@ -41,10 +41,10 @@ system = z2pack.hm.System(hamiltonian)
 
 result = z2pack.surface.run(
         system=system,
-        surface=lambda t1, t2: [t1, t2, pi]
+        surface=lambda t1, t2: [1, t1, t2]
         # surface=z2pack.shape.Sphere([0.5, pi-0.5, pi], 0.1)
     )
-z2pack.plot.wcc(result)
+z2pack.plot.chern(result)
 plt.show()
 
 print(z2pack.invariant.chern(result))

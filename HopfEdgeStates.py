@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 # Parameters
-h = 0
+h = 0.5
 t = 1
 
 Nx = 101

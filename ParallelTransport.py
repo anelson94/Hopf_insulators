@@ -24,9 +24,9 @@ import params
 # Ny = params.Ny
 # Nz = params.Nz
 
-Nx = 101
-Ny = 101
-Nz = 101
+Nx = 100
+Ny = 100
+Nz = 100
 
 kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)
@@ -127,5 +127,9 @@ mult = np.exp(1j * np.multiply(Langle3[:, :, np.newaxis, np.newaxis],
 
 with open('Hopfsmoothstates.pickle', 'wb') as f:
     pickle.dump(usmooth, f)
-print(usmooth[13,6,100,0] - usmooth[13,6,0,0])
+print(usmooth[13,6,Nz-1,0] - usmooth[13,6,0,0])
 #print(usmooth[13,6,79,0])
+
+# plt.figure()
+# plt.imshow(np.real(usmooth[:, 39, :, 1]))
+# plt.show()

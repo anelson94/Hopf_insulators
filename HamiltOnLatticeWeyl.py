@@ -16,7 +16,7 @@ def stackmatr(matr):
 
 
 t = 1
-h = -2
+h = 1
 Asquare = 0  # Splitting constant
 
 Nx = 201
