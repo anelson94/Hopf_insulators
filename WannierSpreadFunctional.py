@@ -3,11 +3,13 @@
 
  Calculate the Wannier spread functional using analytical solution
  to analize the localization of Wannier functions
+
+ 20.06.19 Add steepest decent method for omega_D minimization
 """
 
 import numpy as np
 from math import pi
-import json
+# import json
 
 
 def u1(kx, ky, kz):
@@ -42,7 +44,7 @@ def m_bshift(shift_axis, eigv1, eigv2):
 def m_angle(b):
     """Calculate the angle for all complex values of overlap matrix M
     in b direction"""
-    return np.angle(Mdict[b])
+    return np.angle(Mdict[b]) + 0.0j
 
 
 def rb(b):
@@ -68,9 +70,82 @@ def omega_i():
     return omega
 
 
-h = 2
+def steepestdecent(om, alpha, a, r):
+    """Steepest decent method for spread funct minimization
+    with step alpha/3
+    absolute error a
+    and relative error r"""
+    omnew = minimstep(om, alpha)
+    count = 1
+    while abs((omnew - om) / om) > r and abs(omnew) > a and count < 3:
+        om = omnew
+        omnew = minimstep(om, alpha)
+        count += 1
+        print(count)  # , omnew, Mangledict[0][29, 5, 78], np.abs(Mdict[0][29, 5, 78]))
+    return omnew
+
+
+def minimstep(om, alpha):
+    """Step in minimization procedure with multiplier alpha/3"""
+    global Mdict, rdict, Mangledict
+    g = 0
+    for ib in range(3):
+        g = g + 1j * 4 * (Mangledict[ib] + (2 * pi / Nk) * rdict[ib])
+    print(np.sum(np.abs(g)) / Nk**2)
+    print(np.sum(np.abs(om_deriv())) / Nk**2)
+
+    om = om - alpha / 3 * np.sum(np.power(np.abs(g), 2)) / Nk / (2 * pi)**2
+    u_unitary = np.exp(alpha / 3 * g)  # 1 - alpha / 3 * g
+    for ib in range(3):
+        Mdict[ib] = (np.conjugate(u_unitary) * Mdict[ib]
+                     * np.roll(u_unitary, -1, axis=ib))
+        # mdict_check = Mdict[ib] + alpha / 3 * (-g + np.roll(g, -1, axis=ib)) * Mdict[ib]
+        # print(np.max(np.abs(Mdict[ib] - mdict_check)))
+        Mangledict[ib] = m_angle(ib)
+        rdict[ib] = rb(ib)
+    om_check = omega_d()
+    print(om, om_check)
+    return om
+
+
+def om_deriv():
+    deriv = np.empty((Nk, Nk, Nk), dtype=complex)
+    for idkx in range(Nk):
+        for idky in range(Nk):
+            for idkz in range(Nk):
+                dw = 0.01
+                mangle = Mangledict
+                mangle[0][idkx, idky, idkz] += (
+                    -mangle[0][idkx, idky, idkz] * dw * 1j)
+                mangle[0][idkx - 1, idky, idkz] += (
+                    mangle[0][idkx, idky, idkz] * dw * 1j)
+                mangle[1][idkx, idky, idkz] += (
+                        -mangle[1][idkx, idky, idkz] * dw * 1j)
+                mangle[1][idkx, idky - 1, idkz] += (
+                        mangle[1][idkx, idky, idkz] * dw * 1j)
+                mangle[2][idkx, idky, idkz] += (
+                        -mangle[2][idkx, idky, idkz] * dw * 1j)
+                mangle[2][idkx, idky, idkz - 1] += (
+                        mangle[2][idkx, idky, idkz] * dw * 1j)
+
+                r = {ib: rb(ib) for ib in range(3)}
+                deriv[idkx, idky, idkz] = (
+                        (omega_d_loc(mangle, r) - omega_d()) / dw)
+
+    return deriv
+
+
+def omega_d_loc(mangle, r):
+    omega = 0
+    for ib in range(3):
+        undersum = (np.power(mangle[ib] + (2 * pi / Nk) * r[ib], 2))
+        omega += np.sum(undersum) / Nk / (2 * pi) ** 2
+    return omega
+
+
+h = 3.1
 t = 1
-Nk = 200
+Nk = 50
 
 # Set the meshgrid
 Kx = np.linspace(0, 2*pi, Nk + 1)
@@ -103,8 +178,16 @@ rdict = {ib: rb(ib) for ib in range(3)}
 
 print(rdict)
 
+# Calculate initial spread functionals
 OmI = omega_i()
 OmD = omega_d()
+
+# Steepest decent:
+# Alpha = 0.2
+# epsa = 0.000001
+# epsr = 0.0001
+# OmDmin = steepestdecent(OmD, Alpha, epsa, epsr)
+OmDmin = OmD
 
 # with open(
 #         'Results/SpreadFunctional/'
@@ -112,4 +195,4 @@ OmD = omega_d()
 #          h, t, Nk), 'wb') as f:
 #     json.dump(rdict, f)
 
-print(OmD, OmI)
+print(OmD, OmDmin, OmI)
