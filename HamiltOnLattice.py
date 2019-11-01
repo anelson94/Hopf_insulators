@@ -26,12 +26,12 @@ import params
 # Nz = params.Nz
 
 t = 1
-h = 0
+h = 2
 alpha = 1  # multiplier in front of kx
 
-Nx = 101
-Ny = 101
-Nz = 101
+Nx = 100
+Ny = 100
+Nz = 100
 
 kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)
@@ -67,12 +67,12 @@ Hx = np.multiply(2 * lamb, np.multiply(np.sin(alpha * kkx), np.sin(kkz)) +
                  t*np.multiply(np.sin(kky), (np.cos(alpha * kkx) + np.cos(kky) +
                                              np.cos(kkz) + h)))
 Hy = np.multiply(
-    2 * lamb, t*np.multiply(np.sin(kky), np.sin(kkz))
-    - np.multiply(np.sin(alpha * kkx),
+    2 * lamb, -t*np.multiply(np.sin(kky), np.sin(kkz))
+    + np.multiply(np.sin(alpha * kkx),
                   (np.cos(alpha * kkx) + np.cos(kky) + np.cos(kkz) + h)))
 Hz = np.multiply(lamb, (np.power(np.sin(alpha * kkx), 2) +
                         t**2 * np.power(np.sin(kky), 2) - 
-                        np.power(np.sin(kkz), 2) - 
+                        np.power(np.sin(kkz), 2) -
                         np.power((np.cos(alpha * kkx) + np.cos(kky) +
                                   np.cos(kkz) + h), 2)))
 
