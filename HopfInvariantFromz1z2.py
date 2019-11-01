@@ -30,8 +30,8 @@ kz = np.linspace(0, 2*pi, Nz)
 [kkx, kky, kkz] = np.meshgrid(kx, ky, kz, indexing = 'ij')
 
 # z1 and z2 functions for eigenstate construction
-lamb = np.divide(1, np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) + 
-                 np.power(np.sin(kkz), 2) + 
+lamb = np.divide(1, np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) +
+                 np.power(np.sin(kkz), 2) +
                  np.power(np.cos(kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
 
 # Analytic expression for Hopf integrand AF
@@ -43,10 +43,50 @@ HopffromMathematica = - np.multiply(np.power(lamb, 2),
                                                               np.cos(kky)), 
                                                   np.cos(kkz))))
 
+dipzfromMatematica = -((2 * (1 + (h + np.cos(kkx) + np.cos(kky)) * np.cos(kkz)) * (t * np.power(np.cos(kky), 3) * np.cos(kkz) +
+       1/2 * t * np.power(np.cos(kky), 2) * (5 + 4 * h * np.cos(kkz) + 3 * np.cos(2 * kkz)) +
+       np.cos(kkz) * np.sin(kky) * (t * (h + 2 * np.cos(kkz)) * np.sin(kky) + np.power(np.sin(kkz), 2)) +
+       t * np.cos(kky) * (4 * h * np.power(np.cos(kkz), 2) +
+       4 * np.power(np.cos(kkz), 3) + (h - t * np.sin(kky)) * np.power(np.sin(kkz), 2) +
+       np.cos(kkz) * (h**2 + np.power(np.sin(kky), 2) + 3 * np.power(np.sin(kkz), 2)))))/((h**2 +
+       2 * np.cos(kky) * (h + np.cos(kkz)) + 2 * np.cos(kkx) * (h + np.cos(kky) + np.cos(kkz)) +
+       np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) + np.power(np.sin(kkz), 2)) * np.power((h**2 + np.power(np.cos(kky), 2) +
+       4 * h * np.cos(kkz) + 4 * np.power(np.cos(kkz), 2) + 2 * np.cos(kky) * (h + 2 * np.cos(kkz)) +
+       t**2 * np.power(np.sin(kky), 2) + 2 * np.power(np.sin(kkz), 2)), 2)))
+
+dipxfromMatematica = - (2 * (t * np.cos(kkx) * np.sin(kky) +
+   np.sin(kkx) * np.sin(kkz)) * (t * np.power(np.cos(kky), 2) * (t * np.cos(kkz) * np.sin(kky) - np.power(np.sin(kkz), 2)) +
+   np.cos(kkz) * (t**2 * np.power(np.sin(kky), 3) + t**2 * np.cos(kkz) * np.sin(2 * kky) +
+      np.sin(kky) * np.power(np.sin(kkz), 2)) +
+   t * np.cos(kky) * ((-h + t * np.sin(kky)) * np.power(np.sin(kkz), 2) +
+      np.cos(kkz) * (h * t * np.sin(kky) - np.power(np.sin(kkz), 2)))))/((h**2 + np.power(np.cos(kkx), 2) +
+    np.power(np.cos(kky), 2) + 2 * h * np.cos(kkz) + np.power(np.cos(kkz), 2) + 2 * np.cos(kky) * (h + np.cos(kkz)) +
+   2 * np.cos(kkx) * (h + np.cos(kky) + np.cos(kkz)) + np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) +
+      np.power(np.sin(kkz), 2)) * np.power((h**2 + np.power(np.cos(kky), 2) + 4 * h * np.cos(kkz) + 4 * np.power(np.cos(kkz), 2) +
+   2 * np.cos(kky) * (h + 2 * np.cos(kkz)) + t**2 * np.power(np.sin(kky), 2) + 2 * np.power(np.sin(kkz), 2)), 2))
+
+dipyfromMatematica = (2 * np.cos(kkz) * np.sin(
+  kkz) * (-t * np.cos(kky) * np.sin(kkx) + np.sin(kky) * np.sin(kkz)) * (2 * np.power(np.cos(kkz), 2) +
+   t * (h + np.cos(kky)) * np.sin(kky) + t**2 * np.power(np.sin(kky), 2) +
+   np.cos(kkz) * (h + np.cos(kky) + t * np.sin(kky)) + 2 * np.power(np.sin(kkz), 2)))/((h**2 +
+   np.power(np.cos(kkx), 2) + np.power(np.cos(kky), 2) + 2 * h * np.cos(kkz) + np.power(np.cos(kkz), 2) +
+   2 * np.cos(kky) * (h + np.cos(kkz)) + 2 * np.cos(kkx) * (h + np.cos(kky) + np.cos(kkz)) +
+   np.power(np.sin(kkx), 2) + t**2 * np.power(np.sin(kky), 2) + np.power(np.sin(kkz), 2)) * np.power((h**2 + np.power(np.cos(kky), 2) +
+   4 * h * np.cos(kkz) + 4 * np.power(np.cos(kkz), 2) + 2 * np.cos(kky) * (h + 2 * np.cos(kkz)) +
+   t**2 * np.power(np.sin(kky), 2) + 2 * np.power(np.sin(kkz), 2)), 2))
+
 # After summation we get Hopf invariant
 Hopf = - (np.sum(HopffromMathematica[0:Nx-1, 0:Ny-1, 0:Nz-1]) * 
         (2*pi)/((Nx-1) * (Ny-1) * (Nz-1)))
 
+dipz = - (np.sum(dipzfromMatematica[0:Nx-1, 0:Ny-1, 0:Nz-1]) *
+        (2*pi)/((Nx-1) * (Ny-1) * (Nz-1)))
+dipx = - (np.sum(dipxfromMatematica[0:Nx-1, 0:Ny-1, 0:Nz-1]) *
+        (2*pi)/((Nx-1) * (Ny-1) * (Nz-1)))
+dipy = - (np.sum(dipyfromMatematica[0:Nx-1, 0:Ny-1, 0:Nz-1]) *
+        (2*pi)/((Nx-1) * (Ny-1) * (Nz-1)))
+
+print(dipz, dipx, dipy)
 # Plot integrant at different kz
 #fig = plt.figure()
 #ax = fig.add_subplot(111, projection='3d')
