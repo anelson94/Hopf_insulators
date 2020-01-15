@@ -3,105 +3,103 @@
 Created on Thu Jun 28 13:34:39 2018
 
 @author: aleksandra
-"""
 
-# Calculate Chern numbers for Hopf insulator
-# Calculate for each kz 2D Chern number in x,y plane
+Calculate Chern numbers of 2D cuts of the BZ of the Hopf insulator
+"""
 
 import numpy as np
 from math import pi
-import pickle
-import math
-import cmath
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import hopfham
 
-# Import parameters for Hopf Hamiltonian from file params.py
-import params
 
-t = params.t
-h = params.h
+def gap_check(e, delta):
+    """Check if spectrum has a gap less than 2*delta and return the positions"""
+    small_gap = np.isclose(e, 0, atol=delta)
 
-# Nx = params.Nx
-# Ny = params.Ny
-# Nz = params.Nz
-Nx = 100
-Ny = 100
-Nz = 100
+    print('Gap closes at points:')
+    where_small = np.where(small_gap)
+    print(list(zip(where_small[0], where_small[1], where_small[2])))
 
-kx = np.linspace(0, 2*pi, Nx)
-ky = np.linspace(0, 2*pi, Ny)
-kz = np.linspace(0, 2*pi, Nz)
 
-# Import eigenstates of Hopf Humiltonian
-with open('Berryeigen.pickle', 'rb') as f:
-    [E, u] = pickle.load(f)
+def chern_number(u):
+    """Calculate Chern numbers of band u: Cx, Cy, Cz as functions of kx, ky, kz
+    correspondingly"""
 
-# Occupied states correspond to smaller eigenvalues
-uOcc = u[:, :, :, :, 0]
-Chern_x = np.zeros(Nx)
-Chern_y = np.zeros(Ny)
-Chern_z = np.zeros(Nz)
+    ovlp_x = np.sum(
+        np.conj(u[:-1, :-1, :-1, :]) * u[1:, :-1, :-1, :], axis=-1)
+    ovlp_y = np.sum(
+        np.conj(u[:-1, :-1, :-1, :]) * u[:-1, 1:, :-1, :], axis=-1)
+    ovlp_z = np.sum(
+        np.conj(u[:-1, :-1, :-1, :]) * u[:-1, :-1, 1:, :], axis=-1)
+    ovlp_xy = np.sum(
+        np.conj(u[1:, :-1, :-1, :])
+        * u[1:, 1:, :-1, :], axis=-1)
+    ovlp_xz = np.sum(
+        np.conj(u[1:, :-1, :-1, :])
+        * u[1:, :-1, 1:, :], axis=-1)
+    ovlp_yx = np.sum(
+        np.conj(u[:-1, 1:, :-1, :])
+        * u[1:, 1:, :-1, :], axis=-1)
+    ovlp_yz = np.sum(
+        np.conj(u[:-1, 1:, :-1, :])
+        * u[:-1, 1:, 1:, :], axis=-1)
+    ovlp_zx = np.sum(
+        np.conj(u[:-1, :-1, 1:, :])
+        * u[1:, :-1, 1:, :], axis=-1)
+    ovlp_zy = np.sum(
+        np.conj(u[:-1, :-1, 1:, :])
+        * u[:-1, 1:, 1:, :], axis=-1)
 
-# Check gap in the spectrum
-flag = 0  # No gap closure
-for nkz in range(0, Nz - 1):
-    for nkx in range(0, Nx - 1):
-        for nky in range(0, Ny - 1):
-            if np.abs(E[nkx, nky, nkz, 1] - E[nkx, nky, nkz, 0]) < 0.1:
-                flag = flag + 1  # Count number of closure points
-                print(nkx)
-                print(nky)
-                print(nkz)
-print(flag)
+    chern_x = - np.sum(np.angle(ovlp_y
+                                * ovlp_yz
+                                * ovlp_zy.conjugate()
+                                * ovlp_z.conjugate()),
+                       axis=(1, 2)) / (2 * pi)
+    chern_y = - np.sum(np.angle(ovlp_z
+                                * ovlp_zx
+                                * ovlp_xz.conjugate()
+                                * ovlp_x.conjugate()),
+                       axis=(0, 2)) / (2 * pi)
+    chern_z = - np.sum(np.angle(ovlp_x
+                                * ovlp_xy
+                                * ovlp_yx.conjugate()
+                                * ovlp_y.conjugate()),
+                       axis=(0, 1)) / (2 * pi)
+    return chern_x, chern_y, chern_z
 
-for nkz in range(0, Nz - 1):
-    kkz = kz[nkz]
-    for nkx in range(0, Nx - 1):
-        kkx = kx[nkx]
-        for nky in range(0, Ny - 1):
-            kky = ky[nky]
-            Ux = np.dot(
-                np.conj(uOcc[nkx, nky, nkz, :]), uOcc[nkx + 1, nky, nkz, :])
-            Uy = np.dot(
-                np.conj(uOcc[nkx, nky, nkz, :]), uOcc[nkx, nky + 1, nkz, :])
-            Uz = np.dot(
-                np.conj(uOcc[nkx, nky, nkz, :]), uOcc[nkx, nky, nkz + 1, :])
-            Uxy = np.dot(
-                np.conj(uOcc[nkx + 1, nky, nkz, :]),
-                uOcc[nkx + 1, nky + 1, nkz, :])
-            Uxz = np.dot(
-                np.conj(uOcc[nkx + 1, nky, nkz, :]),
-                uOcc[nkx + 1, nky, nkz + 1, :])
-            Uyx = np.dot(
-                np.conj(uOcc[nkx, nky + 1, nkz, :]),
-                uOcc[nkx + 1, nky + 1, nkz, :])
-            Uyz = np.dot(
-                np.conj(uOcc[nkx, nky + 1, nkz, :]),
-                uOcc[nkx, nky + 1, nkz + 1, :])
-            Uzx = np.dot(
-                np.conj(uOcc[nkx, nky, nkz + 1, :]),
-                uOcc[nkx + 1, nky, nkz + 1, :])
-            Uzy = np.dot(
-                np.conj(uOcc[nkx, nky, nkz + 1, :]),
-                uOcc[nkx, nky + 1, nkz + 1, :])
 
-            Chern_x[nkx] = (Chern_z[nkx]
-                            - (cmath.log(Uy * Uyz * Uzy.conjugate() * Uz.conjugate())).imag
-                            / (2 * pi))
-            Chern_y[nky] = (Chern_z[nky]
-                            - (cmath.log(Uz * Uzx * Uxz.conjugate() * Ux.conjugate())).imag
-                            / (2 * pi))
-            Chern_z[nkz] = (Chern_z[nkz]
-                            - (cmath.log(Ux * Uxy * Uyx.conjugate() * Uy.conjugate())).imag
-                            / (2*pi))
-            # Chern_pi = Chern_pi - (cmath.log(U1 * U2 * U3 * U4)).imag / (
-            #             2 * pi)
-            
-figy, ax = plt.subplots(1, 3)
-ax[0].plot(kx, Chern_x)
-ax[1].plot(ky, Chern_y)
-ax[2].plot(kz, Chern_z)
-plt.show()
+def main():
+    m = 1
+    nx = 100
+    ny = 100
+    nz = 100
 
-# print(Chern_pi)
+    kx = np.linspace(0, 2*pi, nx)
+    ky = np.linspace(0, 2*pi, ny)
+    kz = np.linspace(0, 2*pi, nz)
+
+    kkx, kky, kkz = np.meshgrid(kx, ky, kz, indexing='ij')
+    hamilt = hopfham.ham_mrw(m, kkx, kky, kkz)
+
+    [e, u] = np.linalg.eigh(hamilt)
+
+    # Occupied states correspond to smaller eigenvalues
+    uocc = u[:, :, :, :, 0]
+
+    # Check gap in the spectrum
+    gap_check(e[:, :, :, 0], 0.001)
+
+    c_x, c_y, c_z = chern_number(uocc)
+    print(c_x.shape, kx.shape)
+
+    #
+    figy, ax = plt.subplots(1, 3)
+    ax[0].plot(kx[:-1], c_x)
+    ax[1].plot(ky[:-1], c_y)
+    ax[2].plot(kz[:-1], c_z)
+    plt.show()
+
+
+if __name__ == '__main__':
+    main()
