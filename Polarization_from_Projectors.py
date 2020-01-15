@@ -47,9 +47,9 @@ with open('Hopfeigen.pickle', 'rb') as f:
     [E, u] = pickle.load(f)
 uocc = u[:, :, :, :, 0]
 
-Nx = 101
-Ny = 101
-Nz = 101
+Nx = 100
+Ny = 100
+Nz = 100
 
 Proj_all = np.identity(2, dtype=complex)
 Proj_all = Proj_all[np.newaxis, np.newaxis, :, :]

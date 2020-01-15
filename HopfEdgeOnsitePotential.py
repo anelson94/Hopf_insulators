@@ -538,7 +538,7 @@ def plot_spectrum_MGXM(energy, down, up, nx, n_slab, removebottom, redcolormap,
     dsize = np.zeros((2 * nx + round(nx * sqrt(2)), 2 * n_slab))
     for idslab in range(2 * n_slab):
         for idx in range(2 * nx + round(nx * sqrt(2))):
-                if up[idx, idslab] > 0.3:
+                if (up[idx, idslab] > 0.3) or (down[idx, idslab] > 0.3):
                     dsize[idx, idslab] = 1
     spectr = ax.scatter(kxrep, energy, c=up[:, :] - down[:, :],
                         s=ps + 4 * dsize * ps,
@@ -776,8 +776,8 @@ def maker(m, nx, n_slab, ham_model, t=1, calcPzPspec=0, calcPzPchern=0,
 # Chern number of the upper surface is -1 as well.
 
 # Parameters of the system
-Nx = 100  # Mesh in kx, ky
-N_slab = 20  # Number of layers in z direction
+Nx = 200  # Mesh in kx, ky
+N_slab = 50  # Number of layers in z direction
 m = 1  # Topological phase defining parameter
 # model of the Hamiltonian:
 # model = 'PRL'  # has additional - sign. Hopf invariant is defined with -
@@ -788,12 +788,12 @@ model = 'original'  # Hopf invariant is defined with +
 # detach upper surface band in PRL model
 # surf_param = {'red_down': 0.6, 'red_up': 0.21, 'delta': -1.1, 'pot_down': 1}
 # detach lower surface band in original model
-surf_param = {'red_down': 0.21, 'red_up': 0.6, 'delta': -1.1, 'pot_up': 1}
+# surf_param = {'red_down': 0.21, 'red_up': 0.6, 'delta': -1.1, 'pot_up': 1}
 # both surfaces below Fermi level
 # surf_param = {'red_up': 0.03, 'delta': -1.1, 'pot_down': 2,
 #               'pot_up_next': -1.5, 'pot_up': 1}
 # no surface pot
-# surf_param = {}
+surf_param = {}
 
 # Parameters for spectrum plot
 # part of spectrum
@@ -807,8 +807,8 @@ slabspec_param = {'start_layer': N_slab - 5, 'n_layers': N_slab - 1}
 # Parameters for PzP chern number
 PzPchern_param = {'st_chern_layer': 0, 'n_chern_layers': 3}
 
-# maker(m, Nx, N_slab, model, calcspec=1,
-#       surf_par=surf_param, spec_par=spec_param)
+maker(m, Nx, N_slab, model, calcspec=1,
+      surf_par=surf_param, spec_par=spec_param)
 
 # maker(m, Nx, N_slab, model, calcchern=1,
 #       surf_par=surf_param)
@@ -817,8 +817,8 @@ PzPchern_param = {'st_chern_layer': 0, 'n_chern_layers': 3}
 # maker(m, Nx, N_slab, model, calcPzPspec=1,
 #       surf_par=surf_param, slabspec_par=slabspec_param)
 
-maker(m, Nx, N_slab, model, calcQzQchern=1,
-      surf_par=surf_param, PzPchern_par=PzPchern_param)
+# maker(m, Nx, N_slab, model, calcQzQchern=1,
+#       surf_par=surf_param, PzPchern_par=PzPchern_param)
 
 
 
