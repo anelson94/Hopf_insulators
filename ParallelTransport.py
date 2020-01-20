@@ -24,9 +24,9 @@ import params
 # Ny = params.Ny
 # Nz = params.Nz
 
-Nx = 100
-Ny = 100
-Nz = 100
+Nx = 101
+Ny = 101
+Nz = 101
 
 kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)

@@ -29,9 +29,9 @@ t = 1
 h = 2
 alpha = 1  # multiplier in front of kx
 
-Nx = 100
-Ny = 100
-Nz = 100
+Nx = 101
+Ny = 101
+Nz = 101
 
 kx = np.linspace(0, 2*pi, Nx)
 ky = np.linspace(0, 2*pi, Ny)
@@ -63,6 +63,8 @@ lamb = np.divide(1, np.power(np.sin(alpha * kkx), 2)
                  np.power(np.sin(kkz), 2) + 
                  np.power(np.cos(alpha * kkx) + np.cos(kky) + np.cos(kkz) + h, 2))
 
+lamb = 1
+
 Hx = np.multiply(2 * lamb, np.multiply(np.sin(alpha * kkx), np.sin(kkz)) +
                  t*np.multiply(np.sin(kky), (np.cos(alpha * kkx) + np.cos(kky) +
                                              np.cos(kkz) + h)))
@@ -83,6 +85,9 @@ Hz = Hz[:, :, :, np.newaxis, np.newaxis]
 
 HopfH = (np.multiply(Hx, sigmaxstack) + np.multiply(Hy, sigmaystack) + 
          np.multiply(Hz, sigmazstack))
+
+with open('HopfHamiltonian.pickle', 'wb') as f:
+    pickle.dump(HopfH, f)
 
 # Calculate eigenvalues and eigenvectors of H-Hopf
 [E, u] = np.linalg.eigh(HopfH)

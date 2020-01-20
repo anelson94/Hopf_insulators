@@ -15,14 +15,14 @@ from mayavi import mlab
 
 # Three points in S2 (3d vectors with unitary norms)
 n1 = np.array([1, 0, 0])
-n2 = np.array([0, 1, 0])
-n3 = np.array([0, 0, -1])
+n2 = np.array([-1, 0, 0])
+n3 = np.array([-1, 0, 0])
 
 # Parameters of Hopf Hamiltonian
 t = 1
-h = 0
+h = 2
 # Coefficient in front of symmetry breaking term
-alpha = 0.05
+alpha = 0.0
 
 # Set the space of (kx, ky, kz) on the 3d torus T3
 Nx = 201
