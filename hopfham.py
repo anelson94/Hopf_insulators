@@ -7,6 +7,8 @@
 
 import numpy as np
 from math import pi
+import time
+
 
 
 def scalarprod(a, b):
@@ -75,6 +77,44 @@ def ham_sym_breaking(m, alpha, kx, ky, kz):
     hx = hx[:, :, :, np.newaxis, np.newaxis]
     hy = hy[:, :, :, np.newaxis, np.newaxis]
     hz = hz[:, :, :, np.newaxis, np.newaxis]
+
+    return hx * sigmax + hy * sigmay + hz * sigmaz
+
+
+def ham_bzedge_constant(kx, ky, kz):
+    """Construct a Hamiltonian that is constant on the edge of the BZ"""
+    # Pauli matrices
+    sigmax = np.array([[0, 1], [1, 0]])
+    sigmay = np.array([[0, -1j], [1j, 0]])
+    sigmaz = np.array([[1, 0], [0, -1]])
+
+    k_norm = np.sqrt(kx ** 2 + ky ** 2 + kz ** 2)
+    k_vect = np.stack((kx, ky, kz), axis=-1)
+    psi = np.amax(np.abs(k_vect), axis=-1)
+    delta_k = kx[1, 0, 0] - kx[0, 0, 0]
+
+    # remove 0 elements from norm for further division
+    k_norm_fixed = np.where(k_norm > delta_k / 2, k_norm, 1)
+    theta = np.arccos(kz/k_norm_fixed)
+
+    kx_fixed = np.where(kx > delta_k / 2, kx, 1)
+    phi = np.where(
+        kx > delta_k / 2,
+        np.arctan(ky / kx_fixed) + pi * np.heaviside(-kx, 0),
+        pi / 2 + pi * np.heaviside(-ky, 0)
+    )
+
+    c1 = np.cos(psi) + 1j * np.sin(psi) * np.cos(theta)
+    c2 = np.sin(psi) * np.sin(theta) * (np.cos(phi) + 1j * np.sin(phi))
+
+    c = np.stack((c1, c2), axis=-1)
+
+    hx = np.matmul(np.matmul(
+        c[..., np.newaxis, :], sigmax), c[..., :, np.newaxis])
+    hy = np.matmul(np.matmul(
+        c[..., np.newaxis, :], sigmay), c[..., :, np.newaxis])
+    hz = np.matmul(np.matmul(
+        c[..., np.newaxis, :], sigmaz), c[..., :, np.newaxis])
 
     return hx * sigmax + hy * sigmay + hz * sigmaz
 
@@ -186,3 +226,14 @@ def hopf_invariant(u):
     return - np.sum(underhopf)/(2*pi)**2
 
 
+def mesh_make(nx, ny, nz):
+    """Make a 3D mesh for coordinate vectors with (nx, ny, nz) points"""
+    kx = np.linspace(-pi, pi, nx)
+    ky = np.linspace(-pi, pi, ny)
+    kz = np.linspace(-pi, pi, nz)
+
+    return np.meshgrid(kx, ky, kz, indexing='ij')
+
+
+if __name__ == '__main__':
+    pass
