@@ -16,8 +16,7 @@ venv/
 .DS_Store
 */.DS_Store
 */*/.DS_Store
-__pycache__/params.cpython-36.pyc
-FFTcheck.py
+__pycache__/*
 plt_ex.py
 projectionOnOrbitals.py
 ploteExample.py
