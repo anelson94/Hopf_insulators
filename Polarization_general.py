@@ -113,28 +113,32 @@ def hamiltonian_checkes(hamilt):
 
 
 def main():
-    m = 5
     nx = 101
     ny = 101
     nz = 101
+    nx_half = round((nx-1) / 2)
     plotpol = 2
     between01 = 0
     hamiltceck = 0
+    breaksymmetry = 0
 
-    kx = np.linspace(0, 2 * pi, nx)
-    ky = np.linspace(0, 2 * pi, ny)
-    kz = np.linspace(0, 2 * pi, nz)
+    # mrw model
+    # ham_args = {'model': hopfham.model_mrw, 'm': 1}
+    # edge constant model
+    ham_args = {'model': hopfham.model_edgeconst}
 
-    kkx, kky, kkz = np.meshgrid(kx, ky, kz, indexing='ij')
-    # TODO calculate different amplitudes and see how the minimum of P_z changes
+    kkx, kky, kkz = hopfham.mesh_make(nx, ny, nz)
+
+    # Make for loop to vary some parameter. n_ampl = 1 -> only one calculation
     n_ampl = 1
     ampl_start = 0.5
     ampl_delta = 0.1
     pol_z = np.empty((nx, ny, n_ampl), dtype=complex)
     for idx in range(n_ampl):
         ampl = ampl_start + idx * ampl_delta
-        hamilt = (hopfham.ham_mrw(m, kkx, kky, kkz)
-                  + sym_break_draft(ampl, kkx, kky, kkz))
+        hamilt = hopfham.ham(kkx, kky, kkz, **ham_args)
+        if breaksymmetry == 1:
+            hamilt += sym_break_draft(ampl, kkx, kky, kkz)
 
         if hamiltceck == 1:
             hamiltonian_checkes(hamilt)
@@ -156,12 +160,14 @@ def main():
         print(np.max(pol_x), np.min(pol_x))
     # print(np.max(pol_z) - np.min(pol_z))
     if plotpol == 1:
-        plt.plot(kx, pol_z[:, 50, :])
+        kx = np.linspace(-pi, pi, nx)
+        plt.plot(kx, pol_z[:, nx_half, :])
         plt.plot(kx, np.zeros((nx, 1)), c='black')
         plt.legend([round(ampl_start + idx * ampl_delta, 1)
                     for idx in range(n_ampl)], loc='upper right')
         plt.show()
     if plotpol == 2:
+        kx = np.linspace(-pi, pi, nx)
         fig, ax = plt.subplots(1, 2)
         ax[0].plot(kx, pol_z[:, 50])
         ax[0].plot(kx, np.zeros((nx, 1)), c='black')
@@ -169,7 +175,7 @@ def main():
         # ax[1].plot(kz, np.zeros((nx, 1)), c='black')
         # plt.plot(kx, np.ones((nx, 1)), c='black')
         imsh = ax[1].imshow(pol_x)
-        # plt.colorbar(imsh, cax=ax[1])
+        plt.colorbar(imsh, ax=ax[1])
         # plt.imshow(pol_z)
         # plt.colorbar()
         plt.show()

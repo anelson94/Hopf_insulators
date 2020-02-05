@@ -7,7 +7,8 @@
 
 import numpy as np
 from math import pi
-import time
+from time import time as tm
+import matplotlib.pyplot as plt
 
 
 
@@ -16,6 +17,95 @@ def scalarprod(a, b):
     Returns a stack of <a[i,j,...,:]| b[i,j,...,:]>"""
     prod = np.sum(np.conj(a) * b, axis=-1)
     return prod
+
+
+# Functions to define Hamiltonians for different models
+
+def ham(kx, ky, kz, model, **kwargs):
+    """General Hamiltonian function"""
+    # Get arrays of hx, hy, hz vectors for all momenta in BZ (kx, ky, kz)
+    if callable(model):
+        model = model(kx, ky, kz, **kwargs)
+
+    # Pauli matrices
+    sigmax = np.array([[0, 1], [1, 0]])
+    sigmay = np.array([[0, -1j], [1j, 0]])
+    sigmaz = np.array([[1, 0], [0, -1]])
+
+    # Extract hx, hy, hz from the dict and broadcast to match with
+    # Pauli matrices
+    hx = model['hx'][..., np.newaxis, np.newaxis]
+    hy = model['hy'][..., np.newaxis, np.newaxis]
+    hz = model['hz'][..., np.newaxis, np.newaxis]
+
+    return hx * sigmax + hy * sigmay + hz * sigmaz
+
+
+def model_mrw(kx, ky, kz, m=1):
+    """Moore Ran Wen model of Hamiltonian"""
+
+    hx = 2 * (np.sin(kx) * np.sin(kz)
+              + np.sin(ky) * (np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m))
+    hy = 2 * (- np.sin(ky) * np.sin(kz)
+              + np.sin(kx) * (np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m))
+    hz = (np.sin(kx) ** 2 + np.sin(ky) ** 2
+          - np.sin(kz) ** 2 - (
+                      np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m) ** 2)
+
+    return {'hx': hx, 'hy': hy, 'hz': hz}
+
+
+def model_mrw_norm(kx, ky, kz, m=1):
+    """Moore Ran Wen model of Hamiltonian"""
+
+    hx = 2 * (np.sin(kx) * np.sin(kz)
+              + np.sin(ky) * (np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m))
+    hy = 2 * (- np.sin(ky) * np.sin(kz)
+              + np.sin(kx) * (np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m))
+    hz = (np.sin(kx) ** 2 + np.sin(ky) ** 2
+          - np.sin(kz) ** 2 - (
+                      np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m) ** 2)
+
+    lamb = (np.sin(kx) ** 2 + np.sin(ky) ** 2
+            + np.sin(kz) ** 2 + (
+                      np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m) ** 2)
+
+    return {'hx': hx / lamb, 'hy': hy / lamb, 'hz': hz / lamb}
+
+
+def model_edgeconst(kx, ky, kz):
+    """Model of a Hamiltonian that is constant on the edge of the BZ"""
+    # Pauli matrices
+    sigmax = np.array([[0, 1], [1, 0]])
+    sigmay = np.array([[0, -1j], [1j, 0]])
+    sigmaz = np.array([[1, 0], [0, -1]])
+
+    k_norm = np.sqrt(kx ** 2 + ky ** 2 + kz ** 2)
+    psi = np.maximum(np.abs(kx),
+                     np.maximum(np.abs(ky), np.abs(kz)))
+
+    # remove 0 elements from norm for further division
+    k_norm_fixed = np.where(k_norm > 0, k_norm, 1)  # delta_k / 2
+    theta = np.where(k_norm > 0, np.arccos(kz / k_norm_fixed), pi / 2)
+
+    # remove 0 elements from kx for further division
+    kx_fixed = np.where(np.abs(kx) > 0, kx, 1)
+    phi = np.where(
+        np.abs(kx) > 0,
+        np.arctan(ky / kx_fixed) + pi * np.heaviside(-kx, 0),
+        pi / 2 + pi * np.heaviside(-ky, 0)
+    )
+
+    c1 = np.cos(psi) + 1j * np.sin(psi) * np.cos(theta)
+    c2 = np.sin(psi) * np.sin(theta) * (np.cos(phi) + 1j * np.sin(phi))
+
+    c = np.stack((c1, c2), axis=-1)
+
+    hx = np.sum(np.matmul(np.conj(c), sigmax) * c, axis=-1)
+    hy = np.sum(np.matmul(np.conj(c), sigmay) * c, axis=-1)
+    hz = np.sum(np.matmul(np.conj(c), sigmaz) * c, axis=-1)
+
+    return {'hx': hx, 'hy': hy, 'hz': hz}
 
 
 def ham_mrw(m, kx, ky, kz):
@@ -49,38 +139,6 @@ def ham_mrw(m, kx, ky, kz):
     return hx * sigmax + hy * sigmay + hz * sigmaz
 
 
-def ham_sym_breaking(m, alpha, kx, ky, kz):
-    """hamiltonian of Moore, Ran and Wen"""
-    # Pauli matrices
-    sigmax = np.array([[0, 1], [1, 0]])
-    sigmay = np.array([[0, -1j], [1j, 0]])
-    sigmaz = np.array([[1, 0], [0, -1]])
-
-    # Pauli matrices for calculations at all (kx, ky, kz)
-    sigmax = sigmax[np.newaxis, np.newaxis, np.newaxis, :, :]
-
-    sigmay = sigmay[np.newaxis, np.newaxis, np.newaxis, :, :]
-
-    sigmaz = sigmaz[np.newaxis, np.newaxis, np.newaxis, :, :]
-
-    # hopf hamiltonian is a mapping function from T^3 to S^2.
-    # It has two energy states, one of them occupied.
-
-    hx = 2 * (np.sin(kx) * np.sin(kz)
-              + np.sin(ky) * (np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m))
-    hy = 2 * (- np.sin(ky) * np.sin(kz)
-              + np.sin(kx) * (np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m))
-    hz = (np.sin(kx) ** 2 + np.sin(ky) ** 2
-          - np.sin(kz) ** 2 - (
-                      np.cos(kx) + np.cos(ky) + np.cos(kz) - 3 + m) ** 2)
-
-    hx = hx[:, :, :, np.newaxis, np.newaxis]
-    hy = hy[:, :, :, np.newaxis, np.newaxis]
-    hz = hz[:, :, :, np.newaxis, np.newaxis]
-
-    return hx * sigmax + hy * sigmay + hz * sigmaz
-
-
 def ham_bzedge_constant(kx, ky, kz):
     """Construct a Hamiltonian that is constant on the edge of the BZ"""
     # Pauli matrices
@@ -89,17 +147,18 @@ def ham_bzedge_constant(kx, ky, kz):
     sigmaz = np.array([[1, 0], [0, -1]])
 
     k_norm = np.sqrt(kx ** 2 + ky ** 2 + kz ** 2)
-    k_vect = np.stack((kx, ky, kz), axis=-1)
-    psi = np.amax(np.abs(k_vect), axis=-1)
-    delta_k = kx[1, 0, 0] - kx[0, 0, 0]
+    psi = np.maximum(np.abs(kx),
+                     np.maximum(np.abs(ky), np.abs(kz)))
+
+    # delta_k = kx[1, 0, 0] - kx[0, 0, 0]
 
     # remove 0 elements from norm for further division
-    k_norm_fixed = np.where(k_norm > delta_k / 2, k_norm, 1)
-    theta = np.arccos(kz/k_norm_fixed)
+    k_norm_fixed = np.where(k_norm > 0, k_norm, 1)  # delta_k / 2
+    theta = np.where(k_norm > 0, np.arccos(kz/k_norm_fixed), pi/2)
 
-    kx_fixed = np.where(kx > delta_k / 2, kx, 1)
+    kx_fixed = np.where(np.abs(kx) > 0, kx, 1)
     phi = np.where(
-        kx > delta_k / 2,
+        np.abs(kx) > 0,
         np.arctan(ky / kx_fixed) + pi * np.heaviside(-kx, 0),
         pi / 2 + pi * np.heaviside(-ky, 0)
     )
@@ -109,14 +168,13 @@ def ham_bzedge_constant(kx, ky, kz):
 
     c = np.stack((c1, c2), axis=-1)
 
-    hx = np.matmul(np.matmul(
-        c[..., np.newaxis, :], sigmax), c[..., :, np.newaxis])
-    hy = np.matmul(np.matmul(
-        c[..., np.newaxis, :], sigmay), c[..., :, np.newaxis])
-    hz = np.matmul(np.matmul(
-        c[..., np.newaxis, :], sigmaz), c[..., :, np.newaxis])
+    hx = np.sum(np.matmul(np.conj(c), sigmax) * c, axis=-1)
+    hy = np.sum(np.matmul(np.conj(c), sigmay) * c, axis=-1)
+    hz = np.sum(np.matmul(np.conj(c), sigmaz) * c, axis=-1)
 
-    return hx * sigmax + hy * sigmay + hz * sigmaz
+    return (hx[..., np.newaxis, np.newaxis] * sigmax
+            + hy[..., np.newaxis, np.newaxis] * sigmay
+            + hz[..., np.newaxis, np.newaxis] * sigmaz)
 
 
 def parallel_transport_1d(u, n):
@@ -235,5 +293,19 @@ def mesh_make(nx, ny, nz):
     return np.meshgrid(kx, ky, kz, indexing='ij')
 
 
+def main():
+    """Test functions"""
+    nx = 101
+    kx, ky, kz = mesh_make(nx, nx, nx)
+    hamilt = ham_bzedge_constant(kx, ky, kz)
+    hamilt_test = ham(kx, ky, kz, model_edgeconst)
+    print(np.allclose(hamilt, hamilt_test))
+    # hamilt = ham_bzedge_constant(kx, ky, kz)
+    # e, u = np.linalg.eigh(hamilt)
+    # uocc = u[..., 0]
+    #
+    # u_smooth = smooth_gauge(uocc)
+
+
 if __name__ == '__main__':
-    pass
+    main()
