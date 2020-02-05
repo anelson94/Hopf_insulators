@@ -135,7 +135,7 @@ ax.tick_params(axis='y', pad=3)
 ax.set_xlim(0, sqrt(2) + 2)
 ax.set_ylim(0, 1)
 ax.set_xticks(x_ticks)
-ax.set_xticklabels([r'$\Gamma$', r'$M$', r'$K$', r'$\Gamma$'])
+ax.set_xticklabels([r'$\Gamma$', r'$M$', r'$X$', r'$\Gamma$'])
 ax.set_yticks([0, 1])
 ax.set_yticklabels([r'$0$', r'$1$'])
 for axis in ['top', 'bottom', 'left', 'right']:
