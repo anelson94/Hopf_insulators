@@ -118,14 +118,21 @@ def main():
     nz = 101
     nx_half = round((nx-1) / 2)
     plotpol = 2
+    plot_spectrum = 0
     between01 = 0
     hamiltceck = 0
     breaksymmetry = 0
 
     # mrw model
     # ham_args = {'model': hopfham.model_mrw, 'm': 1}
+    # normalized mrw model
+    # ham_args = {'model': hopfham.model_mrw_norm, 'm': 1}
+    # mrw model from maps
+    # ham_args = {'model': hopfham.model_mrw_maps, 'm': 1}
+    # rotated mrw model from maps
+    ham_args = {'model': hopfham.model_mrw_maps_rotated, 'm': 1, 'alpha': pi/2}
     # edge constant model
-    ham_args = {'model': hopfham.model_edgeconst}
+    # ham_args = {'model': hopfham.model_edgeconst}
 
     kkx, kky, kkz = hopfham.mesh_make(nx, ny, nz)
 
@@ -165,7 +172,6 @@ def main():
         plt.plot(kx, np.zeros((nx, 1)), c='black')
         plt.legend([round(ampl_start + idx * ampl_delta, 1)
                     for idx in range(n_ampl)], loc='upper right')
-        plt.show()
     if plotpol == 2:
         kx = np.linspace(-pi, pi, nx)
         fig, ax = plt.subplots(1, 2)
@@ -178,7 +184,12 @@ def main():
         plt.colorbar(imsh, ax=ax[1])
         # plt.imshow(pol_z)
         # plt.colorbar()
-        plt.show()
+    if plot_spectrum == 1:
+        kx = np.linspace(-pi, pi, nx)
+        plt.figure()
+        plt.plot(kx, e[:, 0, 0, 1])
+
+    plt.show()
 
 
 if __name__ == '__main__':
