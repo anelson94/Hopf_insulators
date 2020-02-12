@@ -108,6 +108,102 @@ def model_edgeconst(kx, ky, kz):
     return {'hx': hx, 'hy': hy, 'hz': hz}
 
 
+def model_mrw_maps(kx, ky, kz, m=1):
+    """Moore Ran Wen model constructed from maps T3->S3->S2"""
+    c1, c2, c3, c4 = map_t3s3_mrw(kx, ky, kz, m)
+    hx, hy, hz = map_s3s2(c1, c2, c3, c4)
+    return {'hx': hx, 'hy': hy, 'hz': hz}
+
+
+def model_mrw_maps_rotated(kx, ky, kz, m=1, alpha=pi/2):
+    """Rotated Moore Ran Wen model constructed from maps T3->S3->S2"""
+    c1, c2, c3, c4 = map_t3s3_mrw(kx, ky, kz, m)
+    c1, c2, c3, c4 = s3_rotate(c1, c2, c3, c4, alpha)
+    hx, hy, hz = map_s3s2(c1, c2, c3, c4)
+    return {'hx': hx, 'hy': hy, 'hz': hz}
+
+
+def model_edgeconst_maps(kx, ky, kz):
+    """Model that is constant on the edge of the BZ
+    from maps T3->S3->S2"""
+    c1, c2, c3, c4 = map_t3s3_edgeconst(kx, ky, kz)
+    hx, hy, hz = map_s3s2(c1, c2, c3, c4)
+    return {'hx': hx, 'hy': hy, 'hz': hz}
+
+
+def model_edgeconst_maps_rotated(kx, ky, kz, alpha):
+    """Rotated model that is constant on the edge of the BZ
+    from maps T3->S3->S2"""
+    c1, c2, c3, c4 = map_t3s3_edgeconst(kx, ky, kz)
+    c1, c2, c3, c4 = s3_rotate(c1, c2, c3, c4, alpha)
+    hx, hy, hz = map_s3s2(c1, c2, c3, c4)
+    return {'hx': hx, 'hy': hy, 'hz': hz}
+
+
+def map_t3s3_mrw(kx, ky, kz, m):
+    """Moore Ran Wen map from T3 to S3"""
+    c1 = np.sin(kx)
+    c2 = np.sin(ky)
+    c3 = np.sin(kz)
+    c4 = np.cos(kx) + np.cos(ky) + np.cos(kz) + m - 3
+    return c1, c2, c3, c4
+
+
+def map_t3s3_edgeconst(kx, ky, kz):
+    """Map from T3 to S3 that is constant on the edge of the BZ"""
+    k_norm = np.sqrt(kx ** 2 + ky ** 2 + kz ** 2)
+    psi = np.maximum(np.abs(kx),
+                     np.maximum(np.abs(ky), np.abs(kz)))
+
+    # remove 0 elements from norm for further division
+    k_norm_fixed = np.where(k_norm > 0, k_norm, 1)  # delta_k / 2
+    theta = np.where(k_norm > 0, np.arccos(kz / k_norm_fixed), pi / 2)
+
+    # remove 0 elements from kx for further division
+    kx_fixed = np.where(np.abs(kx) > 0, kx, 1)
+    phi = np.where(
+        np.abs(kx) > 0,
+        np.arctan(ky / kx_fixed) + pi * np.heaviside(-kx, 0),
+        pi / 2 + pi * np.heaviside(-ky, 0)
+    )
+    c1 = np.cos(psi)
+    c2 = np.sin(psi) * np.cos(theta)
+    c3 = np.sin(psi) * np.sin(theta) * np.cos(phi)
+    c4 = np.sin(psi) * np.sin(theta) * np.sin(phi)
+    return c1, c2, c3, c4
+
+
+def s3_rotate(c1, c2, c3, c4, alpha):
+    """Rotate coordinates on S3 by angles alpha"""
+    # Not yet generic formula. Rotate c1 and c3
+    c1_rot = c1 * np.cos(alpha) - c3 * np.sin(alpha)
+    c2_rot = c2
+    c3_rot = c1 * np.sin(alpha) + c3 * np.cos(alpha)
+    c4_rot = c4
+    return c1_rot, c2_rot, c3_rot, c4_rot
+
+
+def map_s3s2(c1, c2, c3, c4):
+    """Normalized Hopf map from S3 to S2"""
+    z1 = c1 + 1j * c2
+    z2 = c3 + 1j * c4
+
+    # Pauli matrices
+    sigmax = np.array([[0, 1], [1, 0]])
+    sigmay = np.array([[0, -1j], [1j, 0]])
+    sigmaz = np.array([[1, 0], [0, -1]])
+
+    z = np.stack((z1, z2), axis=-1)
+
+    hx = np.real(np.sum(np.matmul(np.conj(z), sigmax) * z, axis=-1))
+    hy = np.real(np.sum(np.matmul(np.conj(z), sigmay) * z, axis=-1))
+    hz = np.real(np.sum(np.matmul(np.conj(z), sigmaz) * z, axis=-1))
+
+    lamb = np.sqrt(hx**2 + hy**2 + hz**2)
+
+    return hx / lamb, hy / lamb, hz / lamb
+
+
 def ham_mrw(m, kx, ky, kz):
     """hamiltonian of Moore, Ran and Wen"""
     # Pauli matrices
@@ -297,7 +393,7 @@ def main():
     """Test functions"""
     nx = 101
     kx, ky, kz = mesh_make(nx, nx, nx)
-    hamilt = ham_bzedge_constant(kx, ky, kz)
+    hamilt = ham(kx, ky, kz, model_edgeconst_maps)
     hamilt_test = ham(kx, ky, kz, model_edgeconst)
     print(np.allclose(hamilt, hamilt_test))
     # hamilt = ham_bzedge_constant(kx, ky, kz)
