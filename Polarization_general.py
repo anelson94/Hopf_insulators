@@ -50,6 +50,58 @@ def polarization_x(pr, between01):
     return pol
 
 
+def polarization_xz(pr, between01):
+    """Polarization of a 1D cut of a BZ in kx+kz direction.
+    The output is a 1d array."""
+    nx = pr.shape[0]
+    nz = pr.shape[2]
+    if nx != nz:
+        print('Dimensions in x and z directions should match')
+        pass
+    all_pr = np.identity(2, dtype=complex)
+    all_pr = all_pr[np.newaxis, :, :]
+    for id in range(nx):
+        all_pr = np.matmul(all_pr, pr[id, :, id, :, :])
+    pol = np.angle(np.trace(all_pr, axis1=-2, axis2=-1)) / 2 / pi
+    if between01 == 1:
+        pol = np.where(pol > 0, pol, pol + 1)
+
+    return pol
+
+
+def polarization_yz(pr, between01):
+    """Polarization of a 1D cut of a BZ in ky+kz direction.
+    The output is a 1d array."""
+    ny = pr.shape[1]
+    nz = pr.shape[2]
+    if ny != nz:
+        print('Dimensions in y and z directions should match')
+        pass
+    all_pr = np.identity(2, dtype=complex)
+    all_pr = all_pr[np.newaxis, :, :]
+    for id in range(ny):
+        all_pr = np.matmul(all_pr, pr[:, id, id, :, :])
+    pol = np.angle(np.trace(all_pr, axis1=-2, axis2=-1)) / 2 / pi
+    if between01 == 1:
+        pol = np.where(pol > 0, pol, pol + 1)
+
+    return pol
+
+
+def polarization_y(pr, between01):
+    """Polarization of a 1D cut of a BZ in ky direction"""
+    ny = pr.shape[1]
+    all_pr = np.identity(2, dtype=complex)
+    all_pr = all_pr[np.newaxis, np.newaxis, :, :]
+    for idy in range(ny):
+        all_pr = np.matmul(all_pr, pr[:, idy, :, :, :])
+    pol = np.angle(np.trace(all_pr, axis1=-2, axis2=-1)) / 2 / pi
+    if between01 == 1:
+        pol = np.where(pol > 0, pol, pol + 1)
+
+    return pol
+
+
 def sym_break_draft(ampl, kx, ky, kz):
     """Try different symmetry breaking terms in Hamiltonian"""
     nx, ny, nz = kx.shape
@@ -112,16 +164,53 @@ def hamiltonian_checkes(hamilt):
     print(np.allclose(uocc_smooth, usmooth_old))
 
 
+def plot_pol_1d(n, pol, label):
+    """Plot 1d cut of a polarization"""
+    k = np.linspace(-pi, pi, n)
+    plt.figure()
+    plt.plot(k, pol, label=label)
+    plt.plot(k, np.zeros((n, 1)), c='black')
+    plt.legend()
+
+
+def plot_pol_2d(pol, label):
+    """Plot 2d imshow of a polarization"""
+    plt.figure()
+    plt.imshow(pol)
+    plt.title(label)
+    plt.colorbar()
+
+
+def plot_spectrum(n, e):
+    """Plot a 1d cut of a spectrum"""
+    k = np.linspace(-pi, pi, n)
+    plt.figure()
+    plt.plot(k, e)
+
+
 def main():
     nx = 101
     ny = 101
     nz = 101
-    nx_half = round((nx-1) / 2)
-    plotpol = 2
+    nx_half = round((nx - 1) / 2)
+    ny_half = round((ny - 1) / 2)
+    nz_half = round((nz - 1) / 2)
+    plotpol = 0
     plot_spectrum = 0
     between01 = 0
     hamiltceck = 0
     breaksymmetry = 0
+    invariant_calc = 0
+    gapcheck = 1
+    plot1d = ['px', 'py', 'pz', 'pxz', 'pyz']
+    plot2d = ['px', 'pz', 'py']
+
+    pol_dict = {'px': polarization_x, 'py': polarization_y,
+                'pz': polarization_z,
+                'pxz': polarization_xz, 'pyz': polarization_yz}
+
+    n_dict = {'px': ny, 'py': nx, 'pz': nx, 'pxz': ny, 'pyz': nx}
+    cut_dict = {'px': nz_half, 'py': nz_half, 'pz': ny_half}
 
     # mrw model
     # ham_args = {'model': hopfham.model_mrw, 'm': 1}
@@ -130,14 +219,50 @@ def main():
     # mrw model from maps
     # ham_args = {'model': hopfham.model_mrw_maps, 'm': 1}
     # rotated mrw model from maps
-    ham_args = {'model': hopfham.model_mrw_maps_rotated, 'm': 1, 'alpha': pi/2}
+    # ham_args = {'model': hopfham.model_mrw_maps_rotated, 'm': 1, 'alpha': pi/2}
+    # rotated edge constant model from maps
+    ham_args = {'model': hopfham.model_edgeconst_maps_rotated, 'alpha': pi/4}
     # edge constant model
     # ham_args = {'model': hopfham.model_edgeconst}
 
     kkx, kky, kkz = hopfham.mesh_make(nx, ny, nz)
+    hamilt = hopfham.ham(kkx, kky, kkz, **ham_args)
+    [e, u] = np.linalg.eigh(hamilt)
+    # Occupied states correspond to smaller eigenvalues
+    uocc = u[:, :, :, :, 0]
+
+    if plot_spectrum == 1:
+        kx = np.linspace(-pi, pi, nx)
+        plt.figure()
+        plt.plot(kx, e[:, 0, 0, 1])
+
+    if invariant_calc == 1:
+        # Smoothen the eigenstates
+        uocc_smooth = hopfham.smooth_gauge(uocc)
+        # Calculate the Hopf invariant
+        print(hopfham.hopf_invariant(uocc_smooth))
+
+    if gapcheck == 1:
+        # Check if the spectrum is gapped
+        gap_check(e[:, :, :, 0], 0.01)
+
+    pr = projector(uocc)
+
+    for p in plot1d:
+        pol = pol_dict[p](pr, between01)
+        if len(pol.shape) > 1:
+            plot_pol_1d(n_dict[p], pol[:, cut_dict[p]], p)
+        else:
+            plot_pol_1d(n_dict[p], pol, p)
+
+    for p in plot2d:
+        pol = pol_dict[p](pr, between01)
+        plot_pol_2d(pol, p)
+
+    plt.show()
 
     # Make for loop to vary some parameter. n_ampl = 1 -> only one calculation
-    n_ampl = 1
+    n_ampl = 0
     ampl_start = 0.5
     ampl_delta = 0.1
     pol_z = np.empty((nx, ny, n_ampl), dtype=complex)
