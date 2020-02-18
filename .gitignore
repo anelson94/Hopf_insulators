@@ -17,6 +17,7 @@ venv/
 */.DS_Store
 */*/.DS_Store
 __pycache__/*
+Slab_Hopf_Hamiltonian.py
 plt_ex.py
 projectionOnOrbitals.py
 ploteExample.py
