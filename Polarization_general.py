@@ -6,7 +6,7 @@
 """
 
 import numpy as np
-from math import pi
+from math import pi, sqrt
 import hopfham
 from HopfChernNumbers import gap_check
 import matplotlib.pyplot as plt
@@ -63,6 +63,53 @@ def polarization_xz(pr, between01):
     for id in range(nx):
         all_pr = np.matmul(all_pr, pr[id, :, id, :, :])
     pol = np.angle(np.trace(all_pr, axis1=-2, axis2=-1)) / 2 / pi
+    if between01 == 1:
+        pol = np.where(pol > 0, pol, pol + 1)
+
+    return pol
+
+
+def polarization_xz_arbratio_1d(pr, n, m, between01):
+    """Polarization of a 1D cut of a BZ in (n*kx, m*kz) direction.
+    n, m must be coprime
+    The output is a 1d array."""
+    nx = pr.shape[0]
+    nz = pr.shape[2]
+    if nx != nz:
+        print('Dimensions in x and z directions should match')
+        pass
+    all_pr = np.identity(2, dtype=complex)
+    all_pr = all_pr[np.newaxis, :, :]
+    for id in range(nx):
+        idx = (n * id) % nx
+        idz = (m * id) % nz
+        all_pr = np.matmul(all_pr, pr[idx, :, idz, :, :])
+    pol = np.angle(np.trace(all_pr, axis1=-2, axis2=-1)) / 2 / pi
+    if between01 == 1:
+        pol = np.where(pol > 0, pol, pol + 1)
+
+    return pol
+
+
+def polarization_xz_arbratio(pr, n, m, between01):
+    """Polarization of a 1D cut of a BZ in (n*kx, m*kz) direction.
+    n, m must be coprime
+    Output is on a (ky, kz) grid"""
+    nx = pr.shape[0]
+    nz = pr.shape[2]
+    pol = np.empty((nx, nx))
+    if nx != nz:
+        print('Dimensions in x and z directions should match')
+        pass
+    for idbz in range(nx):
+        all_pr_1d = np.identity(2, dtype=complex)
+        all_pr_1d = all_pr_1d[np.newaxis, :, :]
+        for id in range(nx):
+            idx = (n * id) % nx
+            idz = (m * id + idbz) % nz
+            all_pr_1d = np.matmul(all_pr_1d, pr[idx, :, idz, :, :])
+        pol[:, idbz] = np.angle(np.trace(all_pr_1d,
+                                         axis1=-2, axis2=-1)) / 2 / pi
     if between01 == 1:
         pol = np.where(pol > 0, pol, pol + 1)
 
@@ -202,8 +249,8 @@ def main():
     breaksymmetry = 0
     invariant_calc = 0
     gapcheck = 1
-    plot1d = ['px', 'py', 'pz', 'pxz', 'pyz']
-    plot2d = ['px', 'pz', 'py']
+    plot1d = []  # 'px', 'py', 'pz', 'pxz', 'pyz'
+    plot2d = []
 
     pol_dict = {'px': polarization_x, 'py': polarization_y,
                 'pz': polarization_z,
@@ -219,9 +266,10 @@ def main():
     # mrw model from maps
     # ham_args = {'model': hopfham.model_mrw_maps, 'm': 1}
     # rotated mrw model from maps
-    # ham_args = {'model': hopfham.model_mrw_maps_rotated, 'm': 1, 'alpha': pi/2}
+    ham_args = {'model': hopfham.model_mrw_maps_rotated, 'm': 1,
+                'alpha': 1.107148}
     # rotated edge constant model from maps
-    ham_args = {'model': hopfham.model_edgeconst_maps_rotated, 'alpha': pi/4}
+    # ham_args = {'model': hopfham.model_edgeconst_maps_rotated, 'alpha': pi/4}
     # edge constant model
     # ham_args = {'model': hopfham.model_edgeconst}
 
@@ -258,6 +306,16 @@ def main():
     for p in plot2d:
         pol = pol_dict[p](pr, between01)
         plot_pol_2d(pol, p)
+
+    # Check fractional direction polarization
+    # TODO iterate over the angle and print the closest to 0 value
+    # TODO consider region in the middle and find for minimal abs value
+    pol = polarization_xz_arbratio(pr, 1, 2, between01)
+    plot_pol_1d(ny, pol[:, nz_half], 'p_x,0z')
+    # pol_check = polarization_x(pr, between01)
+    # plot_pol_1d(ny, pol_check[:, nz_half], 'p_x')
+    plot_pol_2d(pol, 'p_x,0z')
+    # plot_pol_2d(pol_check, 'p_x')
 
     plt.show()
 
